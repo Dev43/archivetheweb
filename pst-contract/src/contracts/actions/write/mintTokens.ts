@@ -1,15 +1,15 @@
-import { ContractResult, PstAction, PstState } from '../../types/types';
+import { ContractResult, PstAction, ArchivoorState } from "../../types/types";
 
 declare const ContractError;
 
 export const mintTokens = async (
-  state: PstState,
+  state: ArchivoorState,
   { caller, input: { qty } }: PstAction
 ): Promise<ContractResult> => {
   const balances = state.balances;
 
   if (qty <= 0) {
-    throw new ContractError('Invalid token mint');
+    throw new ContractError("Invalid token mint");
   }
 
   if (!Number.isInteger(qty)) {

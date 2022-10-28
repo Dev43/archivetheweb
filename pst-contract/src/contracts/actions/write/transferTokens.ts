@@ -1,9 +1,9 @@
-import { ContractResult, PstAction, PstState } from '../../types/types';
+import { ContractResult, PstAction, ArchivoorState } from "../../types/types";
 
 declare const ContractError;
 
 export const transferTokens = async (
-  state: PstState,
+  state: ArchivoorState,
   { caller, input: { target, qty } }: PstAction
 ): Promise<ContractResult> => {
   const balances = state.balances;
@@ -12,11 +12,11 @@ export const transferTokens = async (
   }
 
   if (!target) {
-    throw new ContractError('No target specified');
+    throw new ContractError("No target specified");
   }
 
   if (qty <= 0 || caller === target) {
-    throw new ContractError('Invalid token transfer');
+    throw new ContractError("Invalid token transfer");
   }
 
   if (!balances[caller]) {
@@ -24,7 +24,9 @@ export const transferTokens = async (
   }
 
   if (balances[caller] < qty) {
-    throw new ContractError(`Caller balance not high enough to send ${qty} token(s)!`);
+    throw new ContractError(
+      `Caller balance not high enough to send ${qty} token(s)!`
+    );
   }
 
   balances[caller] -= qty;
