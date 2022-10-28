@@ -3,11 +3,14 @@
 ## TODO
 
 - [ ] Create PST contract
+
   - [x] Mint function
   - [ ] Claim function (after upload)
+
   - [ ] Set contract time function (uploading)
   - [ ] Add validator (check VouchDAO)
   - [ ] Verify validator
+
 - [ ] Fetch contract state
 
 - [ ] Create frontend
@@ -15,7 +18,8 @@
   - [ ] Contract setting page (with iframe)
   - [ ] View archived pages
 
-- [ ] Create validator/uploader server
+- [ ] Create uploader server
+- [ ] Create validator server
 
 - [ ] Allow to use bundlr to upload to warp
 - [ ] Use wallet connect (web3Modal) -- then bundlr

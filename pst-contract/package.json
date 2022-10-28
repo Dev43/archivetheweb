@@ -10,9 +10,9 @@
     "clean": "rimraf ./dist",
     "cp": "copyfiles -u 1 ./src/**/*.json dist",
     "lint": "vue-cli-service lint",
-    "test": "yarn test:node && yarn test:browser",
+    "test": "yarn build:contracts && yarn test:node ",
     "test:node": "jest tests",
-    "test:browser": "jest tests --config ./jest.browser.config.js"
+    "test:browser": " jest tests --config ./jest.browser.config.js"
   },
   "engines": {
     "node": ">=16.5"

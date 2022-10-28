@@ -1,9 +1,9 @@
-import { ContractResult, PstAction, ArchivoorState } from "../../types/types";
+import { ContractResult, PstAction, PstState } from "../../types/types";
 
 declare const ContractError;
 
 export const mintTokens = async (
-  state: ArchivoorState,
+  state: PstState,
   { caller, input: { qty } }: PstAction
 ): Promise<ContractResult> => {
   const balances = state.balances;

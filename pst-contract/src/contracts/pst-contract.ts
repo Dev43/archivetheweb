@@ -1,17 +1,12 @@
 import { balance } from "./actions/read/balance";
 import { mintTokens } from "./actions/write/mintTokens";
 import { transferTokens } from "./actions/write/transferTokens";
-import {
-  ContractResult,
-  PstAction,
-  PstResult,
-  ArchivoorState,
-} from "./types/types";
+import { ContractResult, PstAction, PstResult, PstState } from "./types/types";
 
 declare const ContractError;
 
 export async function handle(
-  state: ArchivoorState,
+  state: PstState,
   action: PstAction
 ): Promise<ContractResult> {
   const input = action.input;

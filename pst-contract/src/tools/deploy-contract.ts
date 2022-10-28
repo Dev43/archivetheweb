@@ -1,11 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-import {LoggerFactory, WarpFactory} from 'warp-contracts';
+import fs from "fs";
+import path from "path";
+import { LoggerFactory, WarpFactory } from "warp-contracts";
 
 // note: remember to build the contract first - yarn build:contracts
 (async () => {
   // Warp and Arweave initialization
-  LoggerFactory.INST.logLevel('error');
+  LoggerFactory.INST.logLevel("error");
   const warp = WarpFactory.forMainnet();
   const arweave = warp.arweave;
 
@@ -15,13 +15,15 @@ import {LoggerFactory, WarpFactory} from 'warp-contracts';
 
   // Loading contract source and initial state from files
   const contractSrc = fs.readFileSync(
-    path.join(__dirname, '../../dist/contract.js'),
-    'utf8'
+    path.join(__dirname, "../../dist/contract.js"),
+    "utf8"
   );
-  const stateFromFile = JSON.parse(fs.readFileSync(
-    path.join(__dirname, '../../dist/contracts/initial-state.json'),
-    'utf8'
-  ));
+  const stateFromFile = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "../../dist/contracts/initial-state.json"),
+      "utf8"
+    )
+  );
 
   const initialState = {
     ...stateFromFile,
@@ -31,15 +33,17 @@ import {LoggerFactory, WarpFactory} from 'warp-contracts';
   };
 
   // Deploying contract
-  console.log('Deployment started');
+  console.log("Deployment started");
   const result = await warp.createContract.deploy({
     wallet: jwk,
     initState: initialState,
     src: contractSrc,
   });
 
-  console.log('Deployment completed: ', {
+  console.log("PST Deployment completed: ", {
     ...result,
-    sonar: `https://sonar.warp.cc/#/app/contract/${result.contractTxId}`
+    sonar: `https://sonar.warp.cc/#/app/contract/${result.contractTxId}`,
   });
+
+  // then do the same with the rest
 })();
