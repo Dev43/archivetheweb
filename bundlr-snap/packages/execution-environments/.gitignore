@@ -1,0 +1,12 @@
+.DS_Store
+node_modules
+coverage
+dist
+dist-temp
+temp
+*.log
+*.tgz
+
+public/
+src/__GENERATED__/
+__test__

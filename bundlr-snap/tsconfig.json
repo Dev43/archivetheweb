@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/cli" },
+    { "path": "./packages/controllers" },
+    { "path": "./packages/execution-environments" },
+    { "path": "./packages/plugin-browserify" },
+    { "path": "./packages/plugin-rollup" },
+    { "path": "./packages/plugin-webpack" },
+    { "path": "./packages/provider" },
+    { "path": "./packages/rpc-methods" },
+    { "path": "./packages/utils" }
+  ]
+}

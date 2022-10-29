@@ -1,0 +1,103 @@
+name: Build, Lint, and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-lint-test:
+    name: Build, Lint, and Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Get Yarn version
+        run: echo "YARN_VERSION=$(yarn --version)" >> $GITHUB_OUTPUT
+        id: yarn-version
+      - name: Cache yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: .yarn/cache
+          key: yarn-cache-${{ runner.os }}-${{ steps.yarn-version.outputs.YARN_VERSION }}-${{ hashFiles('yarn.lock') }}
+      - run: yarn install --immutable
+      - run: yarn build
+      - name: Require clean working directory
+        shell: bash
+        run: |
+          if ! git diff --exit-code; then
+            echo "Working tree dirty after building"
+            exit 1
+          fi
+      - run: yarn lint
+      - run: yarn test:ci
+      - name: Require clean working directory
+        shell: bash
+        run: |
+          if ! git diff --exit-code; then
+            echo "Working tree dirty after tests"
+            exit 1
+          fi
+      - name: CodeCov
+        uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b
+      - name: Validate RC changelog
+        if: ${{ startsWith(github.head_ref, 'release/') }}
+        run: yarn lint:changelogs --rc
+      - name: Validate changelog
+        if: ${{ !startsWith(github.head_ref, 'release/') }}
+        run: yarn lint:changelogs
+
+  platform-compatibility:
+    name: Platform Compatibility Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macOS-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Get Yarn version
+        run: echo "YARN_VERSION=$(yarn --version)" >> $GITHUB_OUTPUT
+        shell: bash
+        id: yarn-version
+      - name: Cache yarn dependencies
+        uses: actions/cache@v3
+        with:
+          path: .yarn/cache
+          key: yarn-cache-${{ runner.os }}-${{ steps.yarn-version.outputs.YARN_VERSION }}-${{ hashFiles('yarn.lock') }}
+      # To use the --immutable flag, we have to install all dependencies, not
+      # just the ones we need.
+      - run: yarn install --immutable
+      - name: Build @metamask/snaps-cli and its dependents only
+        shell: bash
+        run: |
+          yarn workspaces foreach \
+            --recursive \
+            --from @metamask/snaps-cli \
+            --topological-dev \
+            run build
+      - name: Require clean working directory
+        shell: bash
+        run: |
+          if ! git diff --exit-code; then
+            echo "Working tree dirty after building"
+            exit 1
+          fi
+      - run: yarn workspace @metamask/snaps-cli run test
+
+  all-jobs-pass:
+    name: All jobs pass
+    runs-on: ubuntu-latest
+    needs:
+      - build-lint-test
+      - platform-compatibility
+    steps:
+      - run: echo "Great success!"
