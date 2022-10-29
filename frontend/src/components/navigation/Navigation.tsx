@@ -84,13 +84,13 @@ const Nav: React.FC<NavProps> = ({ connectWallet }: NavProps) => {
             <Box color="grey">ArchiveTheWeb</Box>
           </Stack>
           <Flex alignItems={"center"}>
-            <NavLink path={"/courses"}>
+            <NavLink path={"/"}>
               <Box color="grey">Save a Website</Box>
             </NavLink>
-            <NavLink path={"/courses"}>
+            <NavLink path={"/archives"}>
               <Box color="grey">Explore Archive</Box>
             </NavLink>
-            <NavLink path={"/courses"}>
+            <NavLink path={"/"}>
               <Box color="grey">FAQs</Box>
             </NavLink>
             {/* <NavLink path={'/about'}>About</NavLink> */}

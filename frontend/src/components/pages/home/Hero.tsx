@@ -3,7 +3,6 @@ import {
   Button,
   Flex,
   Heading,
-  Image,
   Stack,
   Text,
   Box,
@@ -21,6 +20,9 @@ import { providers } from "ethers";
 import { WebBundlr } from "@bundlr-network/client";
 import Arweave from "arweave";
 import { WarpFactory } from "warp-contracts";
+import { Image } from "@chakra-ui/react";
+// @ts-ignore
+import floppy from "../../../images/Floppy.webp";
 import {
   Modal,
   ModalOverlay,
@@ -35,7 +37,7 @@ import {
   useAccount,
   useConnectModal,
   useDisconnect,
-  useProvider,
+  useSigner,
 } from "@web3modal/react";
 
 const Hero: React.FC = () => {
@@ -59,8 +61,15 @@ const Hero: React.FC = () => {
   const [isLongTerm, setisLongTerm] = React.useState<boolean>(true);
   const [cost, setCost] = React.useState<number>(0.007);
   const [archivor, setarchivor] = React.useState<any>(null);
+  const [isTxInProgress, setisTxInProgress] = React.useState<any>(false);
+  const [txID, setTxID] = React.useState<string>("");
   const [contractState, setContractState] = React.useState<any>({});
-  const { provider: wcProvider, isReady: wcIsReady } = useProvider();
+  const {
+    data: wcSigner,
+    error: wcError,
+    isLoading: isWCSignerLoading,
+    refetch: refetchWCSigner,
+  } = useSigner();
   const disconnect = useDisconnect();
   const warp = WarpFactory.forMainnet();
   const arweave = warp.arweave;
@@ -71,7 +80,6 @@ const Hero: React.FC = () => {
     onOpen: onOpenModal,
     onClose: onCloseModal,
   } = useDisclosure();
-
   const refreshState = async () => {
     if (archivor) {
       setContractState(
@@ -79,47 +87,61 @@ const Hero: React.FC = () => {
           function: "getState",
         })).state
       );
+      console.log("refreshed");
     }
   };
 
   React.useEffect(
     () => {
-      refreshState().then(() => console.log("refreshed"));
+      (async () => {
+        await refreshState();
+      })();
+      return () => {
+        // this now gets called when the component unmounts
+      };
     },
     [archivor]
   );
-  // React.useEffect(
-  //   () => {
-  //     console.log(wcIsReady, isAccountReadyWC);
-  //     console.log(account);
-  //     if (wcIsReady && isAccountReadyWC && account.isConnected) {
-  //       setDeploymentType("walletConnect");
-  //       console.log(wcProvider);
+  React.useEffect(
+    () => {
+      (async () => {
+        console.log(isWCSignerLoading);
+        console.log(wcSigner);
+        console.log("wc connected", account.isConnected);
+        console.log(wcError);
+        if (wcSigner && account.isConnected) {
+          console.log("here");
+          console.log("here");
+          console.log("here");
+          console.log("here");
+          console.log("here");
 
-  //       const provider = new providers.Web3Provider(wcProvider as any);
-  //       console.log("gets here");
-  //       provider._ready().then(() => {
-  //         console.log("gets her222e");
+          setDeploymentType("walletConnect");
+          console.log(wcSigner);
 
-  //         setProvider(wcProvider);
-  //         console.log("prov ready wc");
-  //         const bundlr = new WebBundlr(
-  //           "https://node1.bundlr.network",
-  //           "ethereum",
-  //           provider
-  //         );
-  //         bundlr.ready().then(() => {
-  //           console.log("setting bundlr from WC");
-  //           setBundlr(bundlr);
-  //           setIsConnected(true);
-  //         });
+          const provider = new providers.Web3Provider(wcSigner.provider as any);
 
-  //         openLastModal();
-  //       });
-  //     }
-  //   },
-  //   [wcIsReady, isAccountReadyWC]
-  // );
+          setProvider(wcSigner);
+          console.log("prov ready wc");
+          const bundlr = new WebBundlr(
+            "https://node1.bundlr.network",
+            "ethereum",
+            provider
+          );
+          bundlr.ready().then(() => {
+            console.log("setting bundlr from WC");
+            setBundlr(bundlr);
+            setIsConnected(true);
+            openLastModal();
+          });
+        }
+      })();
+      return () => {
+        // this now gets called when the component unmounts
+      };
+    },
+    [isAccountReadyWC, wcSigner, account]
+  );
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -137,10 +159,8 @@ const Hero: React.FC = () => {
 
   // TODO probably use a service to package this
   const getWebpageSource = async (url: string = "") => {
-    let html = await (await fetch(
-      `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-    )).json();
-    return html.contents;
+    let html = await (await fetch(`http://127.0.0.1:3001/?url=${url}`)).text();
+    return html;
   };
   const handleArconnect = async () => {
     let arch = await warp
@@ -176,6 +196,7 @@ const Hero: React.FC = () => {
 
     console.log("bal", await bundlr.getLoadedBalance());
     setBundlr(bundlr);
+    setDeploymentType("arweave");
     setIsConnected(true);
     close();
     openLastModal();
@@ -204,6 +225,11 @@ const Hero: React.FC = () => {
     onOpenFinal();
   };
 
+  const clear = () => {
+    setisTxInProgress(false);
+    setTxID("");
+  };
+
   const handleDeploy = async () => {
     console.log("deploying type", deploymentType);
 
@@ -213,7 +239,35 @@ const Hero: React.FC = () => {
     );
 
     if (isLongTerm) {
+      // deploy with arweave bundlr
       if (deploymentType == "arweave") {
+        // short term
+        const tags = [
+          { name: "Content-Type", value: "text/html" },
+          // { name: "Deployer", value: walletAddress },
+          { name: "App-Name", value: "archive-the-web" },
+          {
+            name: "Timestamp",
+            value: Math.round(Date.now() / 1000).toString(),
+          },
+          { name: "Sig-Type", value: "arweave" },
+          { name: "Sig", value: "" },
+          { name: "Data-SHA256", value: hash },
+          { name: "Original-URL", value: website },
+        ];
+        console.log("Deploying to Bundlr");
+        const transaction = bundlr.createTransaction(data, {
+          tags: tags,
+        });
+        await transaction.sign();
+        const id = (await transaction.upload()).data.id;
+        setTxID(id);
+        setisTxInProgress(true);
+        console.log("deployed using", deploymentType, "with id", id);
+        await sleep(5000);
+        onCloseModal();
+        onCloseFinal();
+        clear();
       } else if (deploymentType == "walletConnect") {
       } else if (deploymentType == "metamask") {
         // METAMASK SNAP!!
@@ -245,30 +299,9 @@ const Hero: React.FC = () => {
 
         await refreshState();
         onCloseFinal();
+        return;
       }
     } else {
-      // short term
-      const tags = [
-        { name: "Content-Type", value: "text/html" },
-        // { name: "Deployer", value: walletAddress },
-        { name: "App-Name", value: "archive-the-web" },
-        {
-          name: "Timestamp",
-          value: Math.round(Date.now() / 1000).toString(),
-        },
-        { name: "Sig-Type", value: "arweave" },
-        { name: "Sig", value: "" },
-        { name: "Data-SHA256", value: hash },
-        { name: "Original-URL", value: website },
-      ];
-      console.log("Deploying to Bundlr");
-      const transaction = bundlr.createTransaction(JSON.stringify(data), {
-        tags: tags,
-      });
-      await transaction.sign();
-      const id = (await transaction.upload()).data.id;
-      console.log("deployed using", deploymentType, "with id", id);
-      onCloseFinal();
     }
   };
 
@@ -377,15 +410,6 @@ const Hero: React.FC = () => {
               ((duration * 24 * 60) / frequency) * cost}
           </Box>
           {isConnected ? (
-            // <Button
-            //   colorScheme="blue"
-            //   variant="solid"
-            //   width={"100%"}
-            //   onClick={handleDeploy}
-            // >
-            //   Deploy
-            // </Button>
-
             <>
               <Button
                 onClick={onOpenModal}
@@ -490,6 +514,8 @@ const Hero: React.FC = () => {
           frequency={frequency}
           duration={duration}
           cost={cost}
+          isTxInProgress={isTxInProgress}
+          txID={txID}
         />
       </Flex>
     </Flex>
@@ -508,49 +534,70 @@ function DeployModal(args: any) {
     frequency,
     duration,
     cost,
+    isTxInProgress,
+    txID,
   } = args;
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent bgColor="white" color="grey">
-          <ModalHeader bgColor="white" color="grey">
-            Confirm Archiving
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Box>URL: {website}</Box>
-            <Box>Snapshot frequency: every {frequency} minutes</Box>
-            <Box>Duration: {duration} day</Box>
-            <Box>Snapshots per day: {(24 * 60) / frequency}</Box>
-            <Box>
-              Total snapshots:{" "}
-              {duration && frequency && (duration * 24 * 60) / frequency}
-            </Box>
-            <Box>Expected price per snapshots: ${cost}</Box>
-            <Box>
-              Total Cost: ${duration &&
-                frequency &&
-                ((duration * 24 * 60) / frequency) * cost}{" "}
-            </Box>
-            <Box>
-              *Duration and total snapshots are approximate and based on today’s
-              price for archiving. Price fluctuations may impact the actual
-              duration and total snapshots.
-            </Box>
-          </ModalBody>
+          {isTxInProgress ? (
+            <>
+              <ModalHeader bgColor="white" color="grey">
+                Transaction in progress
+              </ModalHeader>
 
-          <ModalFooter>
-            <Button
-              color="white"
-              width="100%"
-              colorScheme="blue"
-              mr={3}
-              onClick={handleDeploy}
-            >
-              Confirm Archiving
-            </Button>
-          </ModalFooter>
+              <ModalBody>
+                <Box boxSize="lg">
+                  <Image src={floppy} alt="Nyan" />
+                </Box>
+                <Box>Tx ID: ${txID}</Box>
+              </ModalBody>
+
+              <ModalFooter />
+            </>
+          ) : (
+            <>
+              <ModalHeader bgColor="white" color="grey">
+                Confirm Archiving
+              </ModalHeader>
+              <ModalCloseButton />
+              <ModalBody>
+                <Box>URL: {website}</Box>
+                <Box>Snapshot frequency: every {frequency} minutes</Box>
+                <Box>Duration: {duration} day</Box>
+                <Box>Snapshots per day: {(24 * 60) / frequency}</Box>
+                <Box>
+                  Total snapshots:{" "}
+                  {duration && frequency && (duration * 24 * 60) / frequency}
+                </Box>
+                <Box>Expected price per snapshots: ${cost}</Box>
+                <Box>
+                  Total Cost: ${duration &&
+                    frequency &&
+                    ((duration * 24 * 60) / frequency) * cost}{" "}
+                </Box>
+                <Box>
+                  *Duration and total snapshots are approximate and based on
+                  today’s price for archiving. Price fluctuations may impact the
+                  actual duration and total snapshots.
+                </Box>
+              </ModalBody>
+
+              <ModalFooter>
+                <Button
+                  color="white"
+                  width="100%"
+                  colorScheme="blue"
+                  mr={3}
+                  onClick={handleDeploy}
+                >
+                  Confirm Archiving
+                </Button>
+              </ModalFooter>
+            </>
+          )}
         </ModalContent>
       </Modal>
     </>
@@ -575,3 +622,6 @@ const isValidUrl = (urlString: string) => {
 
 // add the contract interactions now
 // TODO deploy (or locally!) a server to deploy the websites nicely
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
