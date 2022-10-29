@@ -4,7 +4,6 @@ import {
   createOrder,
   declareUpload,
   setMyAddress,
-  slashUpload,
   voteOnUpload,
 } from "./actions/write/archivor";
 import {
@@ -32,8 +31,6 @@ export async function handle(
       return await declareUpload(state, action);
     case "voteOnUpload":
       return await voteOnUpload(state, action);
-    case "slashUpload":
-      return await slashUpload(state, action);
     // TODO add a signup validate
 
     // view

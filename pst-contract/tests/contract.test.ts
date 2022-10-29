@@ -5,8 +5,10 @@ import path from "path";
 import {
   AddressAction,
   ArchivoorState,
+  ClaimUploadAction,
   DeclareUploadAction,
   OrderAction,
+  VoteUploadAction,
 } from "../src/contracts/types/types";
 import {
   PstContract,
@@ -35,7 +37,6 @@ describe("Testing the Profit Sharing Token", () => {
   beforeAll(async () => {
     arlocal = new ArLocal(1820);
     await arlocal.start();
-
     LoggerFactory.INST.logLevel("error");
 
     warp = WarpFactory.forLocal(1820);
@@ -63,6 +64,16 @@ describe("Testing the Profit Sharing Token", () => {
         "utf8"
       )
     );
+
+    archivorState.validators = {
+      [walletAddress]: {
+        stake: 100,
+        address: walletAddress,
+        address_type: "arweave",
+        reward_address: walletAddress,
+        is_verified: true,
+      },
+    };
 
     initialState = {
       ...stateFromFile,
@@ -175,8 +186,9 @@ describe("Testing the Profit Sharing Token", () => {
       orderAction: {
         website: "https://google.com",
         amount_to_transfer: amount,
-        frequency: 10,
-        duration: 10,
+        // 1 second
+        frequency: 2,
+        duration: 100,
       } as OrderAction,
     });
 
@@ -195,27 +207,168 @@ describe("Testing the Profit Sharing Token", () => {
     expect((await pst.currentState()).balances[archivorID]).toEqual(amount);
   });
 
-  it("should declareUpload order ", async () => {
+  it("should declareUpload and wait for next epoch  ", async () => {
     await archivor.writeInteraction({
       function: "declareUpload",
       declareUpload: {
         txId: "oooxxxx",
-        claim_index: 0,
+        order_id: 0,
       } as DeclareUploadAction,
     });
 
     let res = await archivor.viewState({
-      function: "getOrders",
-    });
-
-    expect(res.result.orders.length).toEqual(1);
-
-    res = await archivor.viewState({
       function: "getState",
     });
     console.log(JSON.stringify(res.result));
 
+    // should not allow me to add another upload
+    try {
+      await archivor.writeInteraction({
+        function: "declareUpload",
+        declareUpload: {
+          txId: "oooxxxx2",
+          order_id: 0,
+        } as DeclareUploadAction,
+      });
+      res = await archivor.viewState({
+        function: "getState",
+      });
+    } catch (e) {}
+
+    expect(res.result.openOrders[0].claims.length).toEqual(1);
+
+    await sleep(2000);
+
+    try {
+      await archivor.writeInteraction({
+        function: "declareUpload",
+        declareUpload: {
+          txId: "oooxxxx2",
+          order_id: 0,
+        } as DeclareUploadAction,
+      });
+      res = await archivor.viewState({
+        function: "getState",
+      });
+    } catch (e) {}
+
+    expect(res.result.openOrders[0].claims.length).toEqual(2);
+
     // console.log(await pst.currentState());
     // expect((await pst.currentState()).balances[archivorID]).toEqual(amount);
   });
+
+  it("should let me claim  ", async () => {
+    await archivor.writeInteraction({
+      function: "claimUpload",
+      claimUpload: {
+        order_id: 0,
+        claim_index: 0,
+      } as ClaimUploadAction,
+    });
+
+    let res = await archivor.viewState({
+      function: "getState",
+    });
+    console.log(JSON.stringify(res.result.openOrders[0].claims[0]));
+
+    await sleep(2000);
+
+    // should not allow me to add another upload
+    try {
+      await archivor.writeInteraction({
+        function: "claimUpload",
+        claimUpload: {
+          order_id: 0,
+          claim_index: 0,
+        } as ClaimUploadAction,
+      });
+      res = await archivor.viewState({
+        function: "getState",
+      });
+    } catch (e) {}
+
+    res = await archivor.viewState({
+      function: "getState",
+    });
+    console.log(res.result.openOrders[0].claims[0]);
+    expect(res.result.openOrders[0].claims[0].claimed).toEqual(true);
+  });
+
+  it("should let me vote on a claim  ", async () => {
+    await archivor.writeInteraction({
+      function: "voteOnUpload",
+      voteOnUpload: {
+        order_id: 0,
+        claim_index: 1,
+        vote: 1,
+      } as VoteUploadAction,
+    });
+
+    let res = await archivor.viewState({
+      function: "getState",
+    });
+    console.log(res.result.openOrders[0].claims[1]);
+    expect(res.result.openOrders[0].claims[1].votes_for).toEqual(1);
+
+    try {
+      await archivor.writeInteraction({
+        function: "voteOnUpload",
+        voteOnUpload: {
+          order_id: 0,
+          claim_index: 1,
+          vote: 1,
+        } as VoteUploadAction,
+      });
+    } catch (e) {}
+
+    res = await archivor.viewState({
+      function: "getState",
+    });
+    console.log(res.result.openOrders[0].claims[1]);
+    expect(res.result.openOrders[0].claims[1].votes_for).toEqual(1);
+  });
+
+  it("should slash ", async () => {
+    await archivor.writeInteraction({
+      function: "declareUpload",
+      declareUpload: {
+        txId: "oooxxxx3",
+        order_id: 0,
+      } as DeclareUploadAction,
+    });
+
+    await archivor.writeInteraction({
+      function: "voteOnUpload",
+      voteOnUpload: {
+        order_id: 0,
+        claim_index: 2,
+        vote: -1,
+      } as VoteUploadAction,
+    });
+
+    await sleep(4000);
+    await archivor.writeInteraction({
+      function: "claimUpload",
+      claimUpload: {
+        order_id: 0,
+        claim_index: 2,
+      } as ClaimUploadAction,
+    });
+
+    let res = await archivor.viewState({
+      function: "getState",
+    });
+    console.log(res.result.openOrders[0].claims[2]);
+    expect(res.result.openOrders[0].claims[2].votes_against).toEqual(1);
+    expect(res.result.validators[walletAddress].stake).toEqual(80);
+  });
+
+  it("should output done  ", async () => {
+    console.log("done");
+  });
 });
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

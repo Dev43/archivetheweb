@@ -2,5 +2,13 @@
   "pst_address": "",
   "my_address": "",
   "openOrders": [],
-  "validators": []
+  "validators": {
+    "B_XAxpuXd5G7qo1Yznduh_PcDnxG-Xj3qxp-0tAHmz0": {
+      "stake": 100,
+      "address": "B_XAxpuXd5G7qo1Yznduh_PcDnxG-Xj3qxp-0tAHmz0",
+      "address_type": "arweave",
+      "reward_address": "B_XAxpuXd5G7qo1Yznduh_PcDnxG-Xj3qxp-0tAHmz0",
+      "is_verified": true
+    }
+  }
 }

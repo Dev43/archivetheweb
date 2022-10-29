@@ -8,8 +8,10 @@ export interface PstState {
 }
 
 export interface ArchivoorState {
-  openOrders: [OpenOrder];
-  validators: [Validator];
+  openOrders: OpenOrder[];
+  validators: {
+    [address: string]: Validator;
+  };
   pst_address: string;
   my_address: string;
 }
@@ -21,11 +23,11 @@ export interface OpenOrder {
   balance: number;
   frequency: number;
   duration: number;
-  current_epoch: number;
+  next_upload_after: number;
   website: string;
   is_active: boolean;
-  archives: [string];
-  claims: [Claim];
+  archives: string[];
+  claims: Claim[];
 }
 
 export interface Claim {
@@ -34,6 +36,10 @@ export interface Claim {
   votes_for: number;
   votes_against: number;
   claim_release_timestamp: number;
+  claimed: boolean;
+  voted: {
+    [address: string]: boolean;
+  };
 }
 
 export interface Validator {
@@ -60,8 +66,8 @@ export interface ArchivorInput {
   myAddressAction: AddressAction;
   orderAction: OrderAction;
   declareUpload: DeclareUploadAction;
-  claimUpload: OrderAction;
-  voteOnUpload: OrderAction;
+  claimUpload: ClaimUploadAction;
+  voteOnUpload: VoteUploadAction;
   slashUpload: OrderAction;
 }
 
@@ -84,9 +90,20 @@ export interface AddressAction {
   address: string;
 }
 
+export interface VoteUploadAction {
+  order_id: number;
+  claim_index: number;
+  vote: number;
+}
+
 export interface DeclareUploadAction {
   txId: string;
+  order_id: number;
+}
+
+export interface ClaimUploadAction {
   claim_index: number;
+  order_id: number;
 }
 export interface PstResult {
   target: string;

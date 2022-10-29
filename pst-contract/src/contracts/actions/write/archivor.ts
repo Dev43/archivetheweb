@@ -4,6 +4,7 @@ import {
   ArchivorAction,
   ArchivoorState,
   Claim,
+  OpenOrder,
 } from "../../types/types";
 
 declare const ContractError;
@@ -53,6 +54,7 @@ export const createOrder = async (
   { caller, input: { orderAction } }: ArchivorAction
 ): Promise<ArchivorContractResult> => {
   // TODO implement approve/transferFrom, for now we simply mint some tokens
+  // for the sake of time
   await SmartWeave.contracts.write(state.pst_address, {
     function: "mint",
     to: state.my_address,
@@ -65,11 +67,11 @@ export const createOrder = async (
     balance: orderAction.amount_to_transfer,
     frequency: orderAction.frequency,
     duration: orderAction.duration,
-    current_epoch: 0,
+    next_upload_after: now(),
     is_active: true,
     archives: [],
     claims: [],
-  });
+  } as OpenOrder);
 
   return { state };
 };
@@ -89,17 +91,33 @@ export const declareUpload = async (
 ): Promise<ArchivorContractResult> => {
   // TODO check if the validator exists in our state
 
-  // todo ensure id is within bounds
+  if (state.validators[caller] === undefined) {
+    throw new Error("validator not in pool");
+  }
+
+  if (declareUpload.order_id > state.openOrders.length) {
+    throw new Error("claim does not exist");
+  }
+
+  let order = state.openOrders[declareUpload.order_id];
+
+  if (order.next_upload_after > now()) {
+    throw new Error("already a claim, wait for next epoch");
+  }
 
   let newClaim = {
     validator: caller,
     claimer_tx: declareUpload.txId,
     votes_against: 0,
     votes_for: 0,
-    claim_release_timestamp: SmartWeave.block.timestamp,
+    // for now only 1 second for testing purposes
+    claim_release_timestamp: now() + 3,
+    claimed: false,
+    voted: {},
   } as Claim;
 
-  state.openOrders[declareUpload.claim_index].claims.push(newClaim);
+  order.claims.push(newClaim);
+  order.next_upload_after = now() + order.frequency;
 
   return { state };
 };
@@ -107,33 +125,94 @@ export const declareUpload = async (
 // here we actually claim the money
 export const claimUpload = async (
   state: ArchivoorState,
-  { caller, input: { orderAction } }: ArchivorAction
+  { caller, input: { claimUpload } }: ArchivorAction
 ): Promise<ArchivorContractResult> => {
-  // TODO
+  if (claimUpload.order_id > state.openOrders.length) {
+    throw new Error("order does not exist");
+  }
+
+  let order = state.openOrders[claimUpload.order_id];
+
+  if (claimUpload.claim_index > order.claims.length) {
+    throw new Error("claim does not exist");
+  }
   // check the claim is valid
-  // check we are the caller
-  // check votes are for and not negative
-  // make the transfer
-  // show claim was claimed somehow?
+  let claim = order.claims[claimUpload.claim_index];
+
+  let validator = state.validators[caller];
+
+  if (validator == undefined) {
+    throw new Error("needs to be validator");
+  }
+
+  if (claim.claimed) {
+    throw new Error("already claimed");
+  }
+
+  if (claim.claim_release_timestamp > now()) {
+    throw new Error("cannot claim yet");
+  }
+
+  if (claim.votes_for - claim.votes_against < 0) {
+    // SLASH
+    validator.stake -= 20;
+    claim.claimed = true;
+    return { state };
+  }
+
+  // otherwise we send the money
+  await SmartWeave.contracts.write(state.pst_address, {
+    function: "transfer",
+    target: validator.reward_address,
+    qty: 1,
+  });
+
+  claim.claimed = true;
+
   return { state };
 };
 
 export const voteOnUpload = async (
   state: ArchivoorState,
-  { caller, input: { orderAction } }: ArchivorAction
+  { caller, input: { voteOnUpload } }: ArchivorAction
 ): Promise<ArchivorContractResult> => {
-  // check is validator
-  // check the claim is fresh
-  // add to vote
+  let order = state.openOrders[voteOnUpload.order_id];
+
+  if (voteOnUpload.claim_index > order.claims.length) {
+    throw new Error("claim does not exist");
+  }
+  let claim = order.claims[voteOnUpload.claim_index];
+
+  if (claim.validator != caller) {
+    throw new Error("unauthorized");
+  }
+
+  let validator = state.validators[caller];
+  if (validator == undefined) {
+    throw new Error("needs to be validator");
+  }
+
+  if (claim.claimed) {
+    throw new Error("already claimed");
+  }
+
+  if (claim.claim_release_timestamp < now()) {
+    throw new Error("cannot vote");
+  }
+
+  if (claim.voted[caller]) {
+    throw new Error("already voted");
+  }
+
+  if (voteOnUpload.vote < 0) {
+    claim.votes_against += 1;
+  } else {
+    claim.votes_for += 1;
+  }
+  claim.voted[caller] = true;
   return { state };
 };
 
-export const slashUpload = async (
-  state: ArchivoorState,
-  { caller, input: { orderAction } }: ArchivorAction
-): Promise<ArchivorContractResult> => {
-  // check the claim exists
-  // check enough neg votes
-  // slash 20%
-  return { state };
-};
+function now() {
+  return SmartWeave.block.timestamp;
+}
