@@ -59,14 +59,14 @@ async function main() {
   let state = await reloadState(archivor);
   console.log(state);
 
-  while (true) {
+  loop1: while (true) {
     let orders = state.openOrders;
     console.log("Init new round, there are ", orders.length, "orders");
 
     // THIS IS THE UPLOADER LOOP
 
     console.log("Entering the Uploader Loop");
-    for (let [orderID, order] of orders.entries()) {
+    loop2: for (let [orderID, order] of orders.entries()) {
       // if it's not our epoch, we continue
       if (order.next_upload_after > Date.now() / 1000) {
         console.log("skip, nothing to do");
@@ -74,7 +74,7 @@ async function main() {
       }
       if (order.balance <= 0) {
         console.log("balance is 0");
-        continue;
+        continue loop2;
       }
 
       // we upload
@@ -229,7 +229,7 @@ async function main() {
             );
           }
 
-          await sleep(10000);
+          await sleep(500);
         }
       }
 
@@ -242,17 +242,17 @@ async function main() {
       // THIS IS THE CLAIM LOOP
       console.log("Entering the Claiming Loop");
 
-      for (let [orderID, order] of orders.entries()) {
+      loopOrderClaim: for (let [orderID, order] of orders.entries()) {
         let claims = order.claims;
 
-        for (let [claimID, claim] of claims.entries()) {
+        loopClaim: for (let [claimID, claim] of claims.entries()) {
           // check if it was claimed
           if (claim.claimed) {
-            continue;
+            continue loopClaim;
           }
 
           if (claim.claim_release_timestamp > Date.now() / 1000) {
-            continue;
+            continue loopClaim;
           }
 
           try {
@@ -266,7 +266,7 @@ async function main() {
 
             if (dw.errorMessage) {
               console.log("error in dw claim, continuing");
-              continue;
+              continue loopClaim;
             }
 
             console.log(
@@ -287,9 +287,8 @@ async function main() {
           }
         }
       }
-
-      await sleep(30000);
     }
+    await sleep(30000);
   }
 }
 
