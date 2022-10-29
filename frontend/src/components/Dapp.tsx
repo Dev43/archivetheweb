@@ -13,6 +13,7 @@ import Footer from "./ui/Footer";
 
 import FourOhFour from "./pages/404/404";
 import { AnyCnameRecord } from "dns";
+import Archives from "./pages/archives/Archives";
 
 const Dapp: React.FC = () => {
   const [selectedAddress, setSelectedAddress] = React.useState<string>();
@@ -125,6 +126,7 @@ const Dapp: React.FC = () => {
           <Box pb={"300px"}>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/archives" element={<Archives />} />
               <Route path="*" element={<FourOhFour />} />
             </Routes>
           </Box>

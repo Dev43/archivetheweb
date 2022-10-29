@@ -1,4 +1,3 @@
-import { SmartWeaveError } from "warp-contracts";
 import {
   ArchivorContractResult,
   ArchivorAction,
