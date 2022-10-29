@@ -1,0 +1,14 @@
+body {
+  background: '#88498F' !important;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  height: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
