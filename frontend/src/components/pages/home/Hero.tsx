@@ -12,6 +12,7 @@ import {
   NumberInputField,
   HStack,
   useDisclosure,
+  Center,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 // example imports
@@ -65,16 +66,16 @@ const Hero: React.FC = () => {
   const [isTxInProgress, setisTxInProgress] = React.useState<any>(false);
   const [txID, setTxID] = React.useState<string>("");
   const [contractState, setContractState] = React.useState<any>({});
-  const {
-    data: wcSigner,
-    error: wcError,
-    isLoading: isWCSignerLoading,
-    refetch: refetchWCSigner,
-  } = useSigner();
   const disconnect = useDisconnect();
   const warp = WarpFactory.forMainnet();
   const arweave = warp.arweave;
 
+  const {
+    data,
+    error: wcError,
+    isLoading: isWCSignerLoading,
+    refetch: refetchWCSigner,
+  } = useSigner();
   const { account, isReady: isAccountReadyWC } = useAccount();
   const {
     isOpen: isOpenModal,
@@ -107,22 +108,16 @@ const Hero: React.FC = () => {
     () => {
       (async () => {
         console.log(isWCSignerLoading);
-        console.log(wcSigner);
+        console.log(data);
         console.log("wc connected", account.isConnected);
         console.log(wcError);
-        if (wcSigner && account.isConnected) {
-          console.log("here");
-          console.log("here");
-          console.log("here");
-          console.log("here");
-          console.log("here");
-
+        if (data && account.isConnected) {
           setDeploymentType("walletConnect");
-          console.log(wcSigner);
 
-          const provider = new providers.Web3Provider(wcSigner.provider as any);
-
-          setProvider(wcSigner);
+          const provider = new providers.Web3Provider(data.provider as any);
+          await provider._ready();
+          console.log("provider is ready");
+          setProvider(data);
           console.log("prov ready wc");
           const bundlr = new WebBundlr(
             "https://node1.bundlr.network",
@@ -141,7 +136,7 @@ const Hero: React.FC = () => {
         // this now gets called when the component unmounts
       };
     },
-    [isAccountReadyWC, wcSigner, account]
+    [isAccountReadyWC, data, account]
   );
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,7 +227,7 @@ const Hero: React.FC = () => {
   };
 
   const handleDeploy = async () => {
-    console.log("deploying type", deploymentType);
+    console.log("deploying type ", deploymentType, "long term", isLongTerm);
 
     let data = await getWebpageSource(website);
     let hash = Arweave.utils.bufferTob64Url(
@@ -240,6 +235,45 @@ const Hero: React.FC = () => {
     );
 
     if (isLongTerm) {
+      console.log("in long term deploy");
+
+      if (deploymentType == "arweave") {
+        return;
+      } else if (deploymentType == "walletConnect") {
+        return;
+      } else if (deploymentType == "metamask") {
+        // METAMASK SNAP!!
+        return;
+      } else if (deploymentType == "arconnect") {
+        if (frequency == undefined) {
+          console.log("freq is undef");
+          return;
+        }
+        if (duration == undefined) {
+          console.log("duration is undef");
+          return;
+        }
+        // first they would need to pay someone
+        // then they would be able to go ahead and do this
+        // right now we shortcut it for time
+        let amountNeeded = Math.round((duration * 24 * 60) / frequency);
+        await archivor.writeInteraction({
+          function: "createOrder",
+          orderAction: {
+            website: website,
+            amount_to_transfer: amountNeeded,
+            // seconds
+            frequency: frequency * 60,
+            // seconds
+            duration: duration * 24 * 60 * 60,
+          },
+        });
+
+        await refreshState();
+        onCloseFinal();
+        return;
+      }
+    } else {
       // deploy with arweave bundlr
       if (deploymentType == "arweave") {
         // short term
@@ -269,40 +303,7 @@ const Hero: React.FC = () => {
         onCloseModal();
         onCloseFinal();
         clear();
-      } else if (deploymentType == "walletConnect") {
-      } else if (deploymentType == "metamask") {
-        // METAMASK SNAP!!
-      } else if (deploymentType == "arconnect") {
-        if (frequency == undefined) {
-          console.log("freq is undef");
-
-          return;
-        }
-        if (duration == undefined) {
-          console.log("duration is undef");
-          return;
-        }
-        // first they would need to pay someone
-        // then they would be able to go ahead and do this
-        // right now we shortcut it for time
-        let amountNeeded = Math.round((duration * 24 * 60) / frequency);
-        await archivor.writeInteraction({
-          function: "createOrder",
-          orderAction: {
-            website: website,
-            amount_to_transfer: amountNeeded,
-            // seconds
-            frequency: frequency * 60,
-            // seconds
-            duration: duration * 24 * 60 * 60,
-          },
-        });
-
-        await refreshState();
-        onCloseFinal();
-        return;
       }
-    } else {
     }
   };
 
@@ -330,7 +331,7 @@ const Hero: React.FC = () => {
             borderWidth="1px"
             borderRadius="lg"
             borderColor={"grey"}
-            height="60px"
+            height="30px"
           >
             <Box
               w="50%"
@@ -339,9 +340,10 @@ const Hero: React.FC = () => {
               alignItems="center"
               alignContent={"center"}
               justifyItems="center"
-              bg={isLongTerm ? "#1F94EE" : "white"}
+              bg={isLongTerm ? "rgba(31, 148, 238, 0.18)" : "white"}
+              onClick={() => setisLongTerm(!isLongTerm)}
             >
-              Long Term
+              <Center>Long Term</Center>
             </Box>
             <Box
               w="50%"
@@ -350,9 +352,10 @@ const Hero: React.FC = () => {
               alignItems="center"
               alignContent={"center"}
               justifyItems="center"
-              bg={isLongTerm ? "white" : "#1F94EE"}
+              bg={isLongTerm ? "white" : "rgba(31, 148, 238, 0.18)"}
+              onClick={() => setisLongTerm(!isLongTerm)}
             >
-              One Time
+              <Center>One Time</Center>
             </Box>
           </HStack>
           <Box>Website:</Box>

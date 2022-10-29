@@ -23,3 +23,11 @@
 - [ ] Allow to use bundlr to upload to warp
 - [ ] Use wallet connect (web3Modal) -- then bundlr
 - [ ] Use metamask SNAP (add bundlr?)
+
+To do now,
+
+- Archived instances view
+- BUNDLR + Warp?
+- Work on ArSNAP
+- CHECK ON WALLETCONNECT
+- Refine the frontend
