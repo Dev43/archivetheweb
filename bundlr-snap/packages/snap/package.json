@@ -26,6 +26,11 @@
     "serve": "mm-snap serve",
     "start": "mm-snap watch"
   },
+  "dependencies": {
+    "arweave": "../../../../forks/arweave-js",
+    "arweave-bundles": "^1.0.3",
+    "ethers": "^5.7.2"
+  },
   "devDependencies": {
     "@lavamoat/allow-scripts": "^2.0.3",
     "@metamask/auto-changelog": "^2.6.0",

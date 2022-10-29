@@ -1,13 +1,13 @@
 {
   "version": "0.1.0",
-  "description": "An example Snap written in TypeScript.",
-  "proposedName": "TypeScript Example Snap",
+  "description": "Arweave/Bundlr SNAP",
+  "proposedName": "ArchivorSNAP",
   "repository": {
     "type": "git",
     "url": "https://github.com/MetaMask/template-snap-monorepo.git"
   },
   "source": {
-    "shasum": "naL9tJT7QHAFER/TGfTcjwUFZUMhrsWY5f8XqX28M/g=",
+    "shasum": "fVz9KU24PmdqKG297h0b9n7LguCaYVOdg81HxTPsvys=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

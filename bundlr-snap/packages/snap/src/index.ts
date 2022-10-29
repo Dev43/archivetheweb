@@ -1,5 +1,8 @@
 import { OnRpcRequestHandler } from '@metamask/snap-types';
-
+import Arweave from 'arweave';
+import deepHash from 'arweave/web/lib/deepHash';
+import ArweaveBundles from 'arweave-bundles';
+import { providers } from 'ethers';
 /**
  * Get a message from the origin. For demonstration purposes only.
  *
@@ -20,7 +23,42 @@ export const getMessage = (originString: string): string =>
  * @throws If the request method is not valid for this snap.
  * @throws If the `snap_confirm` call failed.
  */
-export const onRpcRequest: OnRpcRequestHandler = ({ origin, request }) => {
+export const onRpcRequest: OnRpcRequestHandler = async ({
+  origin,
+  request,
+}) => {
+  console.log(Arweave);
+
+  const deps = {
+    utils: Arweave.utils,
+    crypto: Arweave.crypto,
+    deepHash: deepHash,
+  };
+
+  const arBundles = ArweaveBundles(deps);
+  console.log(arBundles);
+  console.log(wallet);
+  console.log(window);
+
+  console.log(wallet.selectedAddress);
+  console.log(wallet.chainId);
+  console.log(await wallet.enable());
+
+  const provider = new providers.Web3Provider(wallet as any);
+  console.log(provider);
+  console.log(await provider.getBlockNumber());
+
+  const signer = provider.getSigner();
+  // signer.signMessage('hi');
+  // wallet
+  //   .request({ method: 'eth_accounts' })
+  //   .then(console.log)
+  //   .catch((err) => {
+  //     // Some unexpected error.
+  //     // For backwards compatibility reasons, if no accounts are available,
+  //     // eth_accounts will return an empty array.
+  //     console.error(err);
+  //   });
   switch (request.method) {
     case 'hello':
       return wallet.request({
