@@ -2,18 +2,24 @@ import * as React from "react";
 import { ethers } from "ethers";
 import { Routes, Route } from "react-router";
 import { Box } from "@chakra-ui/react";
-import { MAINNET_ID } from "../constants/chain";
+import { DEPLOYED_ADDRESS, MAINNET_ID } from "../constants/chain";
 import { AddressProvider } from "../context/Address";
 import { SignerProvider } from "../context/Signer";
 import { ProviderProvider } from "../context/Provider";
 import Navigation from "./navigation/Navigation";
 import Home from "./pages/home/Home";
-
+import Arweave from "arweave";
+import { WarpFactory } from "warp-contracts";
+import { useParams } from "react-router";
 import Footer from "./ui/Footer";
 
 import FourOhFour from "./pages/404/404";
-import { AnyCnameRecord } from "dns";
 import Archives from "./pages/archives/Archives";
+import Archive from "./pages/archives/Archive";
+import { StateProvider } from "../context/State";
+
+const warp = WarpFactory.forMainnet();
+const arweave = warp.arweave;
 
 const Dapp: React.FC = () => {
   const [selectedAddress, setSelectedAddress] = React.useState<string>();
@@ -25,6 +31,7 @@ const Dapp: React.FC = () => {
     ethers.providers.Web3Provider | ethers.providers.JsonRpcProvider
   >();
   const [signer, setSigner] = React.useState<ethers.Signer>();
+  const [state, setstate] = React.useState<any>(null);
 
   const resetState = () => {
     console.log("resetting state");
@@ -34,6 +41,7 @@ const Dapp: React.FC = () => {
     setTxError(undefined);
     setNetworkError(undefined);
     setProvider(undefined);
+    setstate(undefined);
   };
 
   const checkNetwork = () => {
@@ -43,6 +51,23 @@ const Dapp: React.FC = () => {
 
     setNetworkError("Please connect Metamask to Rinkeby bossman");
     return false;
+  };
+
+  React.useEffect(() => {
+    initializeState();
+    return () => {};
+  }, []);
+
+  const initializeState = async () => {
+    let arch = await warp.contract(DEPLOYED_ADDRESS).setEvaluationOptions({
+      internalWrites: true,
+    });
+
+    let state = (await arch.viewState({
+      function: "getState",
+    })).state;
+
+    setstate(state);
   };
 
   const initializeProvider = async () => {
@@ -117,23 +142,29 @@ const Dapp: React.FC = () => {
   React.useEffect(() => {
     initializeProvider();
   }, []);
+  React.useEffect(() => {
+    initializeState();
+  }, []);
 
   return (
-    <ProviderProvider value={provider}>
-      <SignerProvider value={signer}>
-        <AddressProvider value={selectedAddress}>
-          <Navigation connectWallet={connectWallet} />
-          <Box pb={"300px"}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/archives" element={<Archives />} />
-              <Route path="*" element={<FourOhFour />} />
-            </Routes>
-          </Box>
-          <Footer />
-        </AddressProvider>
-      </SignerProvider>
-    </ProviderProvider>
+    <StateProvider value={state}>
+      <ProviderProvider value={provider}>
+        <SignerProvider value={signer}>
+          <AddressProvider value={selectedAddress}>
+            <Navigation connectWallet={connectWallet} />
+            <Box pb={"300px"}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/archives" element={<Archives />} />
+                <Route path="/archives/*" element={<Archive />} />
+                <Route path="*" element={<FourOhFour />} />
+              </Routes>
+            </Box>
+            <Footer />
+          </AddressProvider>
+        </SignerProvider>
+      </ProviderProvider>
+    </StateProvider>
   );
 };
 

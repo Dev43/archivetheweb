@@ -39,6 +39,7 @@ import {
   useDisconnect,
   useSigner,
 } from "@web3modal/react";
+import { DEPLOYED_ADDRESS } from "../../../constants/chain";
 
 const Hero: React.FC = () => {
   const navigate = useNavigate();
@@ -164,7 +165,7 @@ const Hero: React.FC = () => {
   };
   const handleArconnect = async () => {
     let arch = await warp
-      .contract("9l0EYIHlekDMHRbZusiovgcIb4hkJO-ZJ6X2fQ1x0to")
+      .contract(DEPLOYED_ADDRESS)
       .setEvaluationOptions({
         internalWrites: true,
       })

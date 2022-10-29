@@ -12,61 +12,55 @@ import {
   Container,
   SimpleGrid,
   Flex,
+  LinkBox,
+  LinkOverlay,
 } from "@chakra-ui/react";
 import Arweave from "arweave";
 import { WarpFactory } from "warp-contracts";
+import { DEPLOYED_ADDRESS } from "../../../constants/chain";
+import { useStateProvider } from "../../../context/State";
+import { useNavigate } from "react-router";
 const warp = WarpFactory.forMainnet();
 const arweave = warp.arweave;
 const Archives: React.FC = () => {
-  const [state, setstate] = React.useState<any>(null);
+  let state = useStateProvider();
   const [data, setdata] = React.useState<any>([]);
-
-  React.useEffect(() => {
-    (async () => {
-      let arch = await warp
-        .contract("9l0EYIHlekDMHRbZusiovgcIb4hkJO-ZJ6X2fQ1x0to")
-        .setEvaluationOptions({
-          internalWrites: true,
-        });
-
-      let state = (await arch.viewState({
-        function: "getState",
-      })).state;
-
-      setstate(state);
-      await createData(state);
-
-      //   now we get other
-    })();
-    return () => {};
-  }, []);
-  //   React.useEffect(() => {
-  //     console.log("trying");
-  //     console.log(getIframeTitle("frame-0"));
-  //     return () => {};
-  //   }, []);
+  const navigate = useNavigate();
+  React.useEffect(
+    () => {
+      if (state) {
+        createData(state);
+      }
+      return () => {};
+    },
+    [state]
+  );
   const createData = async (state: any) => {
     console.log("creating data");
     let data: any = [];
     for (let [orderID, order] of state.openOrders.entries()) {
       data.push(
-        <Flex key={orderID}>
-          <Box bg="white" height="300px" width={"500px"}>
-            <iframe
-              id={`frame-${orderID}`}
-              src={order.website}
-              width="100%"
-              height={"100%"}
-              scrolling="no"
-              frameBorder="0"
-              seamless={true}
-            />
+        <LinkBox maxW="sm" p="5" borderWidth="1px" rounded="md">
+          <LinkOverlay href={`/archives/${order.website}`}>
+            <Flex key={orderID}>
+              <Box bg="white" height="300px" width={"500px"}>
+                <iframe
+                  id={`frame-${orderID}`}
+                  src={order.website}
+                  width="100%"
+                  height={"100%"}
+                  scrolling="no"
+                  frameBorder="0"
+                  seamless={true}
+                />
 
-            <Center w="100%">
-              <Box color="grey">{order.website}</Box>
-            </Center>
-          </Box>
-        </Flex>
+                <Center w="100%">
+                  <Box color="grey">{order.website}</Box>
+                </Center>
+              </Box>
+            </Flex>
+          </LinkOverlay>
+        </LinkBox>
       );
     }
     setdata(data);
