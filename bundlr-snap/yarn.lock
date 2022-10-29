@@ -6082,12 +6082,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"arweave-bundles@npm:^1.0.3":
+"arweave-bundles@https://github.com/Dev43/arweave-bundles.git":
   version: 1.0.3
-  resolution: "arweave-bundles@npm:1.0.3"
+  resolution: "arweave-bundles@https://github.com/Dev43/arweave-bundles.git#commit=00553bde3b20fea7efd9837ef4a43acd458b2264"
   dependencies:
     arweave: ^1.10.5
-  checksum: 5289f91fae70f35b134739b20aeef977c0c76c8717135151b5b0cb37953348115ecd75dd5cb46e9b46f47ec2b564158fbab314fd71d1aa182f876ba135e6bd01
+  checksum: 8e09c974bc9053d6ddfbae68608b1e3ec40325ad32715bd199a13b12db2071e897397e143a6ddf48e722858c311f81dc0e0dda6041192e2a821b48855ea3fea7
   languageName: node
   linkType: hard
 
@@ -6621,7 +6621,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.2":
+"bignumber.js@npm:^9.0.2, bignumber.js@npm:^9.1.0":
   version: 9.1.0
   resolution: "bignumber.js@npm:9.1.0"
   checksum: 52ec2bb5a3874d7dc1a1018f28f8f7aff4683515ffd09d6c2d93191343c76567ae0ee32cc45149d53afb2b904bc62ed471a307b35764beea7e9db78e56bef6c6
@@ -16628,7 +16628,8 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^5.33.0
     "@typescript-eslint/parser": ^5.33.0
     arweave: ../../../../forks/arweave-js
-    arweave-bundles: ^1.0.3
+    arweave-bundles: "https://github.com/Dev43/arweave-bundles.git"
+    bignumber.js: ^9.1.0
     eslint: ^8.21.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-import: ^2.26.0

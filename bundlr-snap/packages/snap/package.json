@@ -28,7 +28,8 @@
   },
   "dependencies": {
     "arweave": "../../../../forks/arweave-js",
-    "arweave-bundles": "^1.0.3",
+    "arweave-bundles": "https://github.com/Dev43/arweave-bundles.git",
+    "bignumber.js": "^9.1.0",
     "ethers": "^5.7.2",
     "isomorphic-fetch": "^3.0.0"
   },
