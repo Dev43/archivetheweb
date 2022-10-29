@@ -23,6 +23,8 @@
     "arweave": "^1.11.6",
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
+    "constants": "npm:constants-browserify",
+    "constants-browserify": "^1.0.0",
     "crypto": "npm:crypto-browserify",
     "ethers": "^5.7.2",
     "framer-motion": "^6.2.6",

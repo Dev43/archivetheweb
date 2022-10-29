@@ -20,8 +20,7 @@ import { providers } from "ethers";
 // import WebBundlr
 import { WebBundlr } from "@bundlr-network/client";
 import Arweave from "arweave";
-import { LoggerFactory, WarpFactory } from "warp-contracts";
-import { inlineSource } from "inline-source";
+import { WarpFactory } from "warp-contracts";
 import {
   Modal,
   ModalOverlay,
@@ -58,8 +57,13 @@ const Hero: React.FC = () => {
   const [bundlr, setBundlr] = React.useState<any>();
   const [isConnected, setIsConnected] = React.useState<boolean>(true);
   const [isLongTerm, setisLongTerm] = React.useState<boolean>(true);
+  const [cost, setCost] = React.useState<number>(0.007);
+  const [archivor, setarchivor] = React.useState<any>(null);
+  const [contractState, setContractState] = React.useState<any>({});
   const { provider: wcProvider, isReady: wcIsReady } = useProvider();
   const disconnect = useDisconnect();
+  const warp = WarpFactory.forMainnet();
+  const arweave = warp.arweave;
 
   const { account, isReady: isAccountReadyWC } = useAccount();
   const {
@@ -68,38 +72,54 @@ const Hero: React.FC = () => {
     onClose: onCloseModal,
   } = useDisclosure();
 
+  const refreshState = async () => {
+    if (archivor) {
+      setContractState(
+        (await archivor.viewState({
+          function: "getState",
+        })).state
+      );
+    }
+  };
+
   React.useEffect(
     () => {
-      console.log(wcIsReady, isAccountReadyWC);
-      console.log(account);
-      if (wcIsReady && isAccountReadyWC && account.isConnected) {
-        setDeploymentType("walletConnect");
-        console.log(wcProvider);
-
-        const provider = new providers.Web3Provider(wcProvider as any);
-        console.log("gets here");
-        provider._ready().then(() => {
-          console.log("gets her222e");
-
-          setProvider(wcProvider);
-          console.log("prov ready wc");
-          const bundlr = new WebBundlr(
-            "https://node1.bundlr.network",
-            "ethereum",
-            provider
-          );
-          bundlr.ready().then(() => {
-            console.log("setting bundlr from WC");
-            setBundlr(bundlr);
-            setIsConnected(true);
-          });
-
-          openLastModal();
-        });
-      }
+      refreshState().then(() => console.log("refreshed"));
     },
-    [wcIsReady, isAccountReadyWC]
+    [archivor]
   );
+  // React.useEffect(
+  //   () => {
+  //     console.log(wcIsReady, isAccountReadyWC);
+  //     console.log(account);
+  //     if (wcIsReady && isAccountReadyWC && account.isConnected) {
+  //       setDeploymentType("walletConnect");
+  //       console.log(wcProvider);
+
+  //       const provider = new providers.Web3Provider(wcProvider as any);
+  //       console.log("gets here");
+  //       provider._ready().then(() => {
+  //         console.log("gets her222e");
+
+  //         setProvider(wcProvider);
+  //         console.log("prov ready wc");
+  //         const bundlr = new WebBundlr(
+  //           "https://node1.bundlr.network",
+  //           "ethereum",
+  //           provider
+  //         );
+  //         bundlr.ready().then(() => {
+  //           console.log("setting bundlr from WC");
+  //           setBundlr(bundlr);
+  //           setIsConnected(true);
+  //         });
+
+  //         openLastModal();
+  //       });
+  //     }
+  //   },
+  //   [wcIsReady, isAccountReadyWC]
+  // );
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -121,6 +141,22 @@ const Hero: React.FC = () => {
       `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
     )).json();
     return html.contents;
+  };
+  const handleArconnect = async () => {
+    let arch = await warp
+      .contract("9l0EYIHlekDMHRbZusiovgcIb4hkJO-ZJ6X2fQ1x0to")
+      .setEvaluationOptions({
+        internalWrites: true,
+      })
+      .connect("use_wallet");
+
+    setarchivor(arch);
+
+    console.log("Arconnect ready");
+    setDeploymentType("arconnect");
+    setIsConnected(true);
+    close();
+    openLastModal();
   };
 
   const handleConnectWalletBundlr = async () => {
@@ -176,33 +212,64 @@ const Hero: React.FC = () => {
       await Arweave.crypto.hash(Buffer.from(data), "SHA-256")
     );
 
-    if (deploymentType == "arweave") {
-    } else if (deploymentType == "walletConnect") {
-    } else if (deploymentType == "metamask") {
-      // must be metamask SNAP
-    }
+    if (isLongTerm) {
+      if (deploymentType == "arweave") {
+      } else if (deploymentType == "walletConnect") {
+      } else if (deploymentType == "metamask") {
+        // METAMASK SNAP!!
+      } else if (deploymentType == "arconnect") {
+        if (frequency == undefined) {
+          console.log("freq is undef");
 
-    const tags = [
-      { name: "Content-Type", value: "text/html" },
-      // { name: "Deployer", value: walletAddress },
-      { name: "App-Name", value: "archive-the-web" },
-      {
-        name: "Timestamp",
-        value: Math.round(Date.now() / 1000).toString(),
-      },
-      { name: "Sig-Type", value: "arweave" },
-      { name: "Sig", value: "" },
-      { name: "Data-SHA256", value: hash },
-      { name: "Original-URL", value: website },
-    ];
-    console.log("Deploying to Bundlr");
-    const transaction = bundlr.createTransaction(JSON.stringify(data), {
-      tags: tags,
-    });
-    await transaction.sign();
-    const id = (await transaction.upload()).data.id;
-    console.log("deployed using", deploymentType, "with id", id);
-    onCloseFinal();
+          return;
+        }
+        if (duration == undefined) {
+          console.log("duration is undef");
+          return;
+        }
+        // first they would need to pay someone
+        // then they would be able to go ahead and do this
+        // right now we shortcut it for time
+        let amountNeeded = Math.round((duration * 24 * 60) / frequency);
+        await archivor.writeInteraction({
+          function: "createOrder",
+          orderAction: {
+            website: website,
+            amount_to_transfer: amountNeeded,
+            // seconds
+            frequency: frequency * 60,
+            // seconds
+            duration: duration * 24 * 60 * 60,
+          },
+        });
+
+        await refreshState();
+        onCloseFinal();
+      }
+    } else {
+      // short term
+      const tags = [
+        { name: "Content-Type", value: "text/html" },
+        // { name: "Deployer", value: walletAddress },
+        { name: "App-Name", value: "archive-the-web" },
+        {
+          name: "Timestamp",
+          value: Math.round(Date.now() / 1000).toString(),
+        },
+        { name: "Sig-Type", value: "arweave" },
+        { name: "Sig", value: "" },
+        { name: "Data-SHA256", value: hash },
+        { name: "Original-URL", value: website },
+      ];
+      console.log("Deploying to Bundlr");
+      const transaction = bundlr.createTransaction(JSON.stringify(data), {
+        tags: tags,
+      });
+      await transaction.sign();
+      const id = (await transaction.upload()).data.id;
+      console.log("deployed using", deploymentType, "with id", id);
+      onCloseFinal();
+    }
   };
 
   return (
@@ -267,7 +334,7 @@ const Hero: React.FC = () => {
             <Box>
               <Box>Snapshot frequency (in minutes):</Box>
               <NumberInput
-                min={10}
+                min={1}
                 max={30000}
                 borderColor={"grey"}
                 variant="outline"
@@ -299,6 +366,16 @@ const Hero: React.FC = () => {
             </Box>
           )}
 
+          <Box>Expected Price Per Snapshot USD $0.007</Box>
+          <Box>
+            Total Snapshots*{" "}
+            {frequency && duration && (duration * 24 * 60) / frequency}
+          </Box>
+          <Box>
+            Total Cost ${frequency &&
+              duration &&
+              ((duration * 24 * 60) / frequency) * cost}
+          </Box>
           {isConnected ? (
             // <Button
             //   colorScheme="blue"
@@ -335,6 +412,14 @@ const Hero: React.FC = () => {
                         borderWidth="1px"
                         borderRadius="lg"
                         borderColor={"grey"}
+                        onClick={handleArconnect}
+                      >
+                        Arconnect
+                      </Button>
+                      <Button
+                        borderWidth="1px"
+                        borderRadius="lg"
+                        borderColor={"grey"}
                         onClick={handleConnectWalletBundlr}
                       >
                         Arweave x Bundlr
@@ -344,7 +429,7 @@ const Hero: React.FC = () => {
                         borderRadius="lg"
                         borderColor={"grey"}
                       >
-                        Metamask
+                        Metamask SNAP
                       </Button>
                       <Button
                         borderWidth="1px"
@@ -402,6 +487,9 @@ const Hero: React.FC = () => {
           website={website}
           data={website}
           handleDeploy={handleDeploy}
+          frequency={frequency}
+          duration={duration}
+          cost={cost}
         />
       </Flex>
     </Flex>
@@ -411,7 +499,16 @@ const Hero: React.FC = () => {
 export default Hero;
 
 function DeployModal(args: any) {
-  let { isOpen, onOpen, onClose, website, handleDeploy } = args;
+  let {
+    isOpen,
+    onOpen,
+    onClose,
+    website,
+    handleDeploy,
+    frequency,
+    duration,
+    cost,
+  } = args;
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -423,12 +520,19 @@ function DeployModal(args: any) {
           <ModalCloseButton />
           <ModalBody>
             <Box>URL: {website}</Box>
-            <Box>Snapshot frequency {website}</Box>
-            <Box>Duration: {website}</Box>
-            <Box>Snapshots per day: {website}</Box>
-            <Box>Total snapshots: {website}</Box>
-            <Box>Expected price per snapshots: {website}</Box>
-            <Box>Total Cost: {website}</Box>
+            <Box>Snapshot frequency: every {frequency} minutes</Box>
+            <Box>Duration: {duration} day</Box>
+            <Box>Snapshots per day: {(24 * 60) / frequency}</Box>
+            <Box>
+              Total snapshots:{" "}
+              {duration && frequency && (duration * 24 * 60) / frequency}
+            </Box>
+            <Box>Expected price per snapshots: ${cost}</Box>
+            <Box>
+              Total Cost: ${duration &&
+                frequency &&
+                ((duration * 24 * 60) / frequency) * cost}{" "}
+            </Box>
             <Box>
               *Duration and total snapshots are approximate and based on today’s
               price for archiving. Price fluctuations may impact the actual
