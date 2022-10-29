@@ -133,6 +133,10 @@ export const claimUpload = async (
 
   let order = state.openOrders[claimUpload.order_id];
 
+  if (order.balance <= 0) {
+    throw new Error("not enough balance");
+  }
+
   if (claimUpload.claim_index > order.claims.length) {
     throw new Error("claim does not exist");
   }
@@ -168,6 +172,7 @@ export const claimUpload = async (
   });
 
   claim.claimed = true;
+  order.balance -= 1;
 
   return { state };
 };
