@@ -1,8 +1,0 @@
-{
-  "extends": "../../../../tsconfig.packages.json",
-  "compilerOptions": {
-    "resolveJsonModule": true
-  },
-  "files": ["../../../types/global.d.ts"],
-  "include": ["src", "gulpfile.ts", "babel.config.json"]
-}

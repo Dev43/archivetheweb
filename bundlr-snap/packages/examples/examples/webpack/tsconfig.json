@@ -1,8 +1,0 @@
-{
-  "extends": "../../../../tsconfig.packages.json",
-  "compilerOptions": {
-    "typeRoots": ["../../../../node_modules/@types"]
-  },
-  "files": ["../../../types/global.d.ts"],
-  "include": ["src", "webpack.config.ts"]
-}
