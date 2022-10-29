@@ -3,26 +3,10 @@ import Arweave from 'arweave';
 import deepHash from 'arweave/web/lib/deepHash';
 import ArweaveBundles from 'arweave-bundles';
 import { providers } from 'ethers';
-/**
- * Get a message from the origin. For demonstration purposes only.
- *
- * @param originString - The origin string.
- * @returns A message based on the origin.
- */
-export const getMessage = (originString: string): string =>
-  `Hello, ${originString}!`;
+import fetch from 'isomorphic-fetch';
 
-/**
- * Handle incoming JSON-RPC requests, sent through `wallet_invokeSnap`.
- *
- * @param args - The request handler args as object.
- * @param args.origin - The origin of the request, e.g., the website that
- * invoked the snap.
- * @param args.request - A validated JSON-RPC request object.
- * @returns `null` if the request succeeded.
- * @throws If the request method is not valid for this snap.
- * @throws If the `snap_confirm` call failed.
- */
+const BUNDLR_URL = 'https://node1.bundlr.network';
+
 export const onRpcRequest: OnRpcRequestHandler = async ({
   origin,
   request,
@@ -36,43 +20,59 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   };
 
   const arBundles = ArweaveBundles(deps);
-  console.log(arBundles);
-  console.log(wallet);
-  console.log(window);
+  // console.log(arBundles);
+  // console.log(wallet);
+  // console.log(window);
 
-  console.log(wallet.selectedAddress);
-  console.log(wallet.chainId);
-  console.log(await wallet.enable());
+  // console.log(wallet.selectedAddress);
+  // console.log(wallet.chainId);
+  // console.log(await wallet.enable());
 
-  const provider = new providers.Web3Provider(wallet as any);
-  console.log(provider);
-  console.log(await provider.getBlockNumber());
+  // const provider = new providers.Web3Provider(wallet as any);
+  // console.log(provider);
+  // console.log(await provider.getBlockNumber());
 
-  const signer = provider.getSigner();
-  // signer.signMessage('hi');
-  // wallet
-  //   .request({ method: 'eth_accounts' })
-  //   .then(console.log)
-  //   .catch((err) => {
-  //     // Some unexpected error.
-  //     // For backwards compatibility reasons, if no accounts are available,
-  //     // eth_accounts will return an empty array.
-  //     console.error(err);
-  //   });
+  // const signer = provider.getSigner();
+
   switch (request.method) {
-    case 'hello':
-      return wallet.request({
+    case 'bundle_data':
+      if (!request.params) {
+        return;
+      }
+      let data = (request.params as any).data;
+      //
+
+      wallet.request({
         method: 'snap_confirm',
         params: [
           {
-            prompt: getMessage(origin),
-            description:
-              'This custom confirmation is just for display purposes.',
-            textAreaContent:
-              'But you can edit the snap source code to make it do something, if you want to!',
+            prompt: 'Bundle Data',
+            description: `You are about to bundle data of size ${data.length}`,
+            textAreaContent: (data as string).substring(0, 10) + '...',
           },
         ],
       });
+
+      wallet.request({
+        method: 'snap_notify',
+        params: [
+          {
+            type: 'inApp',
+            message: `Hello, world!`,
+          },
+        ],
+      });
+      wallet.request({
+        method: 'snap_notify',
+        params: [
+          {
+            type: 'native',
+            message: `Hello, world!`,
+          },
+        ],
+      });
+
+      return;
     default:
       throw new Error('Method not found.');
   }
