@@ -22,6 +22,7 @@
 
 - [x] Fix tags encoding for bundlr
 - [ ] Allow to use bundlr to upload to warp
+- [x] add warp/eth to ARSNAP
 - [x] Use wallet connect (web3Modal) -- then bundlr
 - [x] Use metamask SNAP (add bundlr?)
 

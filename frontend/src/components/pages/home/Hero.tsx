@@ -24,6 +24,8 @@ import { WebBundlr } from "@bundlr-network/client";
 import Arweave from "arweave";
 import { WarpFactory } from "warp-contracts";
 import { Image } from "@chakra-ui/react";
+import { evmSignature, EvmSignatureVerificationPlugin } from 'warp-signature';
+
 // @ts-ignore
 import floppy from "../../../images/Floppy.webp";
 import {
@@ -45,6 +47,7 @@ import {
 } from "@web3modal/react";
 import { DEPLOYED_ADDRESS } from "../../../constants/chain";
 import { bundlerize } from "../../../context/bundlr";
+import web from "@bundlr-network/client/build/web";
 const Hero: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen, open, close } = useConnectModal();
@@ -57,25 +60,26 @@ const Hero: React.FC = () => {
   const [websitePreview, setwebsitePreview] = React.useState<string>(
     "https://ethlisbon.org"
   );
-  const [frequency, setfrequency] = React.useState<number>();
-  const [duration, setduration] = React.useState<number>();
+  const [frequency, setfrequency] = React.useState<number>(1);
+  const [duration, setduration] = React.useState<number>(1);
   const [deploymentType, setDeploymentType] = React.useState<string>("arweave");
   const [provider, setProvider] = React.useState<any>();
   const [bundlr, setBundlr] = React.useState<any>();
-  const [isConnected, setIsConnected] = React.useState<boolean>(true);
+  const [isConnected, setIsConnected] = React.useState<boolean>(false);
   const [isLongTerm, setisLongTerm] = React.useState<boolean>(true);
   const [cost, setCost] = React.useState<number>(0.007);
   const [archivor, setarchivor] = React.useState<any>(null);
   const [isTxInProgress, setisTxInProgress] = React.useState<any>(false);
+  const [isConnectButtonDisabled, disableConnectButton] = React.useState<any>(false);
   const [txID, setTxID] = React.useState<string>("");
   const [contractState, setContractState] = React.useState<any>({});
   const disconnect = useDisconnect();
-  const warp = WarpFactory.forMainnet();
+  let warp = (WarpFactory.forMainnet() as any).use(new EvmSignatureVerificationPlugin());
 
 
   // WC
   const {
-    data:wcSigner,
+    data: wcSigner,
     error: wcError,
     isLoading: isWCSignerLoading,
     refetch: refetchWCSigner,
@@ -108,19 +112,34 @@ const Hero: React.FC = () => {
     },
     [archivor]
   );
- 
+
 
   React.useEffect(
     () => {
       console.log(account)
-      if (account.isConnected && !isConnected) {
+      if (account.isConnected && wcSigner) {
         console.log("disconnecting from wc")
-        return disconnect()
+        handleConnectWalletConnect()
       }
-     handleWalletConnect()
     },
     [wcSigner, isWCSignerLoading, wcError]
   );
+
+  React.useEffect(
+    () => {
+      disableConnectButton(calcshouldConnectBeDisabled())
+    },
+    [isLongTerm, frequency, duration, website]
+  );
+
+  const calcshouldConnectBeDisabled = () => {
+    if (isLongTerm && frequency && frequency > 0 && duration && duration > 0 && isValidUrl(website)) {
+      return false
+    } else if (isValidUrl(website)) {
+      return false
+    }
+    return true
+  }
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -158,7 +177,11 @@ const Hero: React.FC = () => {
     openLastModal();
   };
 
-  const handleConnectWalletBundlr = async () => {
+  const handleShowConnectionChoices = () => {
+    onOpenModal()
+  }
+
+  const handleArconnectConnection = async () => {
     await (window.ethereum as any).enable();
 
     const provider = new providers.Web3Provider(window.ethereum as any);
@@ -181,8 +204,9 @@ const Hero: React.FC = () => {
     openLastModal();
   };
 
+  const handleConnectWalletConnect = async () => {
 
-  const handleWalletConnect = async () => {
+    // TODO seperate short term and long term
 
     // console.log(wcProvider.getSigner())
     console.log("in handleWC")
@@ -197,19 +221,19 @@ const Hero: React.FC = () => {
     setIsConnected(true);
     close();
     openLastModal();
-  
+
   };
 
   const openWalletConnect = async () => {
     // we open the walletconnect
 
     if (account.isConnected) {
-      return handleWalletConnect()
+      return handleConnectWalletConnect()
     }
     open();
     // we close the previous modal
     onCloseModal();
-  
+
   };
 
   const openLastModal = async () => {
@@ -222,7 +246,11 @@ const Hero: React.FC = () => {
   };
 
 
+
+
+
   let handleConnectMM = async () => {
+
     const provider = await detectEthereumProvider();
 
     // web3_clientVersion returns the installed MetaMask version as a string
@@ -257,37 +285,66 @@ const Hero: React.FC = () => {
 
     if (isLongTerm) {
       console.log("in long term deploy");
-
+      if (frequency == undefined) {
+        console.log("freq is undef");
+        return;
+      }
+      if (duration == undefined) {
+        console.log("duration is undef");
+        return;
+      }
+      let amountNeeded = Math.round((duration * 24 * 60) / frequency);
+      let freq = frequency * 60;
+      let dur = duration * 24 * 60 * 60
       if (deploymentType == "arweave") {
         return;
       } else if (deploymentType == "walletConnect") {
         return;
       } else if (deploymentType == "metamask") {
-        // METAMASK SNAP!!
-        await handleConnectMM()
+        console.log("in here")
+
+        // here we use warp eth sig!
+        let arch = await warp
+          .contract(DEPLOYED_ADDRESS)
+          .setEvaluationOptions({
+            internalWrites: true,
+          })
+          .connect({ signer: evmSignature, signatureType: 'ethereum' });
+        console.log("connected to long term mm")
+
+        await arch.writeInteraction({
+          function: "createOrder",
+          orderAction: {
+            website: website,
+            amount_to_transfer: amountNeeded,
+            // seconds
+            frequency: freq,
+            // seconds
+            duration: dur,
+          },
+        });
+
+        await refreshState();
+        onCloseFinal();
+        return;
+
+
         return;
       } else if (deploymentType == "arconnect") {
-        if (frequency == undefined) {
-          console.log("freq is undef");
-          return;
-        }
-        if (duration == undefined) {
-          console.log("duration is undef");
-          return;
-        }
+
         // first they would need to pay someone
         // then they would be able to go ahead and do this
         // right now we shortcut it for time
-        let amountNeeded = Math.round((duration * 24 * 60) / frequency);
+
         await archivor.writeInteraction({
           function: "createOrder",
           orderAction: {
             website: website,
             amount_to_transfer: amountNeeded,
             // seconds
-            frequency: frequency * 60,
+            frequency: freq,
             // seconds
-            duration: duration * 24 * 60 * 60,
+            duration: dur,
           },
         });
 
@@ -346,7 +403,7 @@ const Hero: React.FC = () => {
       else if (deploymentType == "walletconnect") {
         let source = await getWebpageSource(website)
 
-        let txID =  await bundlerize(source, (wcSigner as any));
+        let txID = await bundlerize(source, (wcSigner as any));
         console.log(txID)
         setTxID(txID);
         setisTxInProgress(true);
@@ -467,12 +524,13 @@ const Hero: React.FC = () => {
               duration &&
               ((duration * 24 * 60) / frequency) * cost}
           </Box>
-          {isConnected ? (
+          {!isConnected ? (
             <>
               <Button
                 onClick={onOpenModal}
                 colorScheme="blue"
                 variant="solid"
+                disabled={isConnectButtonDisabled}
                 width={"100%"}
               >
                 Connect
@@ -503,7 +561,7 @@ const Hero: React.FC = () => {
                         borderRadius="lg"
                         hidden={!isLongTerm}
                         borderColor={"grey"}
-                        onClick={handleConnectWalletBundlr}
+                        onClick={handleArconnectConnection}
                       >
                         Arweave x Bundlr
                       </Button>
@@ -535,9 +593,10 @@ const Hero: React.FC = () => {
               colorScheme="blue"
               variant="solid"
               width={"100%"}
-              onClick={handleConnectWalletBundlr}
+              disabled={isConnected}
+            // onClick={handleShowConnectionChoices}
             >
-              Connect Wallet
+              Connected!
             </Button>
           )}
           <Box>Pay with Arweave using (AR) (Metamask) (WalletConnect)</Box>

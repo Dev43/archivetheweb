@@ -2894,6 +2894,31 @@
     once "^1.4.0"
     readable-stream "^2.3.3"
 
+"@metamask/onboarding@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@metamask/onboarding/-/onboarding-1.0.1.tgz#14a36e1e175e2f69f09598e2008ab6dc1b3297e6"
+  integrity sha512-FqHhAsCI+Vacx2qa5mAFcWNSrTcVGMNjzxVgaX8ECSny/BJ9/vgXP9V7WF/8vb9DltPeQkxr+Fnfmm6GHfmdTQ==
+  dependencies:
+    bowser "^2.9.0"
+
+"@metamask/providers@^10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@metamask/providers/-/providers-10.0.0.tgz#8858f3a0d991fe3462cd056a52a74f3ffabc9373"
+  integrity sha512-GAaXm8+dIN66KfD4EUETyxxmUMDTnpoOsgtoWIS8kI8PdVL1wNazMK2HD03n4b66r0c2SaFdQLxvjeSpu5TyWA==
+  dependencies:
+    "@metamask/object-multiplex" "^1.1.0"
+    "@metamask/safe-event-emitter" "^2.0.0"
+    "@types/chrome" "^0.0.136"
+    detect-browser "^5.2.0"
+    eth-rpc-errors "^4.0.2"
+    extension-port-stream "^2.0.1"
+    fast-deep-equal "^2.0.1"
+    is-stream "^2.0.0"
+    json-rpc-engine "^6.1.0"
+    json-rpc-middleware-stream "^4.0.0"
+    pump "^3.0.0"
+    webextension-polyfill-ts "^0.25.0"
+
 "@metamask/providers@^8.1.1":
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/@metamask/providers/-/providers-8.1.1.tgz#7b0dbb54700c949aafba24c9b98e6f4e9d81f325"
@@ -5484,6 +5509,11 @@ borsh@^0.7.0:
     bs58 "^4.0.0"
     text-encoding-utf-8 "^1.0.2"
 
+bowser@^2.9.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
+  integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
+
 brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"
@@ -8014,7 +8044,7 @@ ethereumjs-vm@^2.3.4:
     rustbn.js "~0.2.0"
     safe-buffer "^5.1.1"
 
-ethers@^5.5.1, ethers@^5.5.3:
+ethers@^5.5.1, ethers@^5.5.3, ethers@^5.7.2:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
@@ -11171,6 +11201,14 @@ json-rpc-middleware-stream@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/json-rpc-middleware-stream/-/json-rpc-middleware-stream-3.0.0.tgz#8540331d884f36b9e0ad31054cc68ac6b5a89b52"
   integrity sha512-JmZmlehE0xF3swwORpLHny/GvW3MZxCsb2uFNBrn8TOqMqivzCfz232NSDLLOtIQlrPlgyEjiYpyzyOPFOzClw==
+  dependencies:
+    "@metamask/safe-event-emitter" "^2.0.0"
+    readable-stream "^2.3.3"
+
+json-rpc-middleware-stream@^4.0.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/json-rpc-middleware-stream/-/json-rpc-middleware-stream-4.1.0.tgz#5bc570cdfc63488805f43b5042273f9a631b052c"
+  integrity sha512-pg40YNVorY/HICPShALVPIsr7NrH5wgEqzF/MzCSAkk028VJ0sSa3VRvZCjaXd9b2gPigO9DMSo4/znxBpMVAg==
   dependencies:
     "@metamask/safe-event-emitter" "^2.0.0"
     readable-stream "^2.3.3"
@@ -14871,6 +14909,11 @@ safe-stable-stringify@2.3.1:
   resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.3.1.tgz#ab67cbe1fe7d40603ca641c5e765cb942d04fc73"
   integrity sha512-kYBSfT+troD9cDA85VDnHZ1rpHC50O0g1e6WlGHVCz/g+JS+9WKLj+XwFYyR8UbrZN8ll9HUpDAAddY58MGisg==
 
+safe-stable-stringify@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.1.tgz#34694bd8a30575b7f94792aa51527551bd733d61"
+  integrity sha512-dVHE6bMtS/bnL2mwualjc6IxEv1F+OCUpA46pKUj6F8uDbUM0jCCulPqRNPSnWwGNKx5etqMjZYdXtrm5KJZGA==
+
 "safer-buffer@>= 2.1.2 < 3", "safer-buffer@>= 2.1.2 < 3.0.0", safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
@@ -16639,22 +16682,20 @@ warning@^4.0.3:
   dependencies:
     loose-envify "^1.0.0"
 
-warp-contracts@^1.2.13:
-  version "1.2.13"
-  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.13.tgz#653841d2bbf7d50d80bd2557f8e1d9f7648ea2f7"
-  integrity sha512-qSlkxb4N+5oFKUWqPDfIA5ZqsEJRyjJtmeFadI6yMgSm+HLvREDdGl3RrmBOdNAEC+ROvKv7ii4sWq0/fxrV5Q==
+warp-contracts@1.2.14-beta.6:
+  version "1.2.14-beta.6"
+  resolved "https://registry.yarnpkg.com/warp-contracts/-/warp-contracts-1.2.14-beta.6.tgz#8330b60c380aaf69bda1da3f9906558a1b143dc5"
+  integrity sha512-hCS7KblfGrQIzrKdKRGpWmorHqbIIsGanNK1kAlhO3hwSCGXatkOr3WLG3s9eYgH4ATl2gnuctaYcdVZxPPSag==
   dependencies:
     "@assemblyscript/loader" "^0.19.23"
     "@idena/vrf-js" "^1.0.1"
     archiver "^5.3.0"
     arweave "1.11.6"
-    bignumber.js "^9.0.1"
     elliptic "^6.5.4"
     events "3.3.0"
     fast-copy "^2.1.1"
     knex "^0.95.14"
     level "^8.0.0"
-    lodash "^4.17.21"
     memory-level "^1.0.0"
     redstone-isomorphic "1.1.8"
     redstone-wasm-metering "1.0.3"
@@ -16662,6 +16703,18 @@ warp-contracts@^1.2.13:
     stream-buffers "^3.0.2"
     unzipit "^1.4.0"
     vm2 "3.9.9"
+
+warp-signature@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/warp-signature/-/warp-signature-1.0.1.tgz#4b9bcce18283bb43bc23dcf048f6f104db441d11"
+  integrity sha512-lrSEjYDEr0r32SRAsvMEKjFnZbW2JjYulPA1zYnb//iFXsrHSzm7M53M0u7X0GL9vn6sSTMzrYcly7F3G8YDWQ==
+  dependencies:
+    "@metamask/onboarding" "^1.0.1"
+    "@metamask/providers" "^10.0.0"
+    arweave "^1.11.6"
+    ethers "^5.7.2"
+    safe-stable-stringify "^2.4.1"
+    warp-contracts "1.2.14-beta.6"
 
 watchpack@^2.4.0:
   version "2.4.0"

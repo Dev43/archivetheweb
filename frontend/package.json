@@ -58,7 +58,8 @@
     "stream": "npm:stream-browserify",
     "typescript": "^4.5.5",
     "uuid": "^8.3.2",
-    "warp-contracts": "^1.2.13",
+    "warp-contracts": "1.2.14-beta.6",
+    "warp-signature": "^1.0.1",
     "web-vitals": "^2.1.4",
     "webpack": "^5.74.0",
     "zlib": "npm:browserify-zlib"

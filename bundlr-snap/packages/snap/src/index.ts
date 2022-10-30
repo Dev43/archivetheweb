@@ -7,7 +7,6 @@ import fetch from 'isomorphic-fetch';
 import { ethers } from 'ethers';
 import { randomBytes } from 'ethers/lib/utils';
 import { BigNumber } from 'bignumber.js';
-
 const BUNDLR_URL = 'https://node1.bundlr.network';
 const ethSigner = {
   signatureLength: 65,
