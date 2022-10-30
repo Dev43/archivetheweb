@@ -57,8 +57,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       if (!confirm) {
         return;
       }
-
-      let txID = await bundlerize(data);
+      const provider = new providers.Web3Provider(wallet as any);
+      const ethWallet = provider.getSigner();
+      let txID = await bundlerize(data, ethWallet);
 
       wallet.request({
         method: 'snap_notify',
@@ -102,10 +103,7 @@ async function createFakeBundle(data: string) {
   return encoded;
 }
 
-async function bundlerize(data: string) {
-  const provider = new providers.Web3Provider(wallet as any);
-  const ethWallet = provider.getSigner();
-
+async function bundlerize(data: string, ethWallet: any) {
   const address = 'sign this message to connect to Bundlr.Network';
   const signedMsg = await ethWallet.signMessage(address);
 

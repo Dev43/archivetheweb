@@ -40,10 +40,11 @@ import {
   useAccount,
   useConnectModal,
   useDisconnect,
+  useProvider,
   useSigner,
 } from "@web3modal/react";
 import { DEPLOYED_ADDRESS } from "../../../constants/chain";
-
+import { bundlerize } from "../../../context/bundlr";
 const Hero: React.FC = () => {
   const navigate = useNavigate();
   const { isOpen, open, close } = useConnectModal();
@@ -70,15 +71,19 @@ const Hero: React.FC = () => {
   const [contractState, setContractState] = React.useState<any>({});
   const disconnect = useDisconnect();
   const warp = WarpFactory.forMainnet();
-  const arweave = warp.arweave;
 
+
+  // WC
   const {
-    data,
+    data:wcSigner,
     error: wcError,
     isLoading: isWCSignerLoading,
     refetch: refetchWCSigner,
   } = useSigner();
   const { account, isReady: isAccountReadyWC } = useAccount();
+const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
+
+
   const {
     isOpen: isOpenModal,
     onOpen: onOpenModal,
@@ -91,7 +96,6 @@ const Hero: React.FC = () => {
           function: "getState",
         })).state
       );
-      console.log("refreshed");
     }
   };
 
@@ -106,40 +110,20 @@ const Hero: React.FC = () => {
     },
     [archivor]
   );
+ 
+
   React.useEffect(
     () => {
-      (async () => {
-        console.log(isWCSignerLoading);
-        console.log(data);
-        console.log("wc connected", account.isConnected);
-        console.log(wcError);
-        if (data && account.isConnected) {
-          setDeploymentType("walletConnect");
-
-          const provider = new providers.Web3Provider(data.provider as any);
-          await provider._ready();
-          console.log("provider is ready");
-          setProvider(data);
-          console.log("prov ready wc");
-          const bundlr = new WebBundlr(
-            "https://node1.bundlr.network",
-            "ethereum",
-            provider
-          );
-          bundlr.ready().then(() => {
-            console.log("setting bundlr from WC");
-            setBundlr(bundlr);
-            setIsConnected(true);
-            openLastModal();
-          });
-        }
-      })();
-      return () => {
-        // this now gets called when the component unmounts
-      };
+      console.log(account)
+      if (account.isConnected && !isConnected) {
+        console.log("disconnecting from wc")
+        return disconnect()
+      }
+     handleWalletConnect()
     },
-    [isAccountReadyWC, data, account]
+    [wcSigner]
   );
+ 
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -201,12 +185,30 @@ const Hero: React.FC = () => {
   };
 
 
-  const handleConnectWalletConnect = async () => {
-    disconnect();
+  const handleWalletConnect = async () => {
+
+    // console.log(wcProvider.getSigner())
+    console.log("in handleWC")
+    if (!wcSigner) {
+      return
+    }
+    console.log(console.log(wcSigner))
+
+    await bundlerize("hello", (wcSigner as any))
+
+    setDeploymentType("walletconnect")
+    setIsConnected(true);
+    close();
+    openLastModal();
+  
+  };
+
+  const openWalletConnect = async () => {
     // we open the walletconnect
     open();
     // we close the previous modal
     onCloseModal();
+  
   };
 
   const openLastModal = async () => {
@@ -504,7 +506,7 @@ const Hero: React.FC = () => {
                         borderRadius="lg"
                         hidden={!isLongTerm}
                         borderColor={"grey"}
-                        onClick={handleConnectWalletConnect}
+                        onClick={openWalletConnect}
                       >
                         WalletConnect
                       </Button>

@@ -11,7 +11,7 @@ const config = {
   theme: "dark",
   accentColor: "default",
   ethereum: {
-    appName: "archivetheweb",
+    appName: "ethlisbon",
   },
 };
 // @ts-ignore
