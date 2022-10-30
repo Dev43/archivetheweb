@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defaultSnapOrigin } from '../config';
 import { GetSnapsResponse, Snap } from '../types';
 
@@ -61,6 +62,7 @@ export const getSnap = async (version?: string): Promise<Snap | undefined> => {
  */
 
 export const sendHello = async () => {
+  // @ts-ignore
   await window.ethereum.request({
     method: 'wallet_invokeSnap',
     params: [

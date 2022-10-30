@@ -79,7 +79,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         ],
       });
 
-      return;
+      return txID;
     default:
       throw new Error('Method not found.');
   }

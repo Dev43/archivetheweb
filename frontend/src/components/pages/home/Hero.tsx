@@ -16,6 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 // example imports
+import detectEthereumProvider from '@metamask/detect-provider';
+
 import { providers } from "ethers";
 // import WebBundlr
 import { WebBundlr } from "@bundlr-network/client";
@@ -198,16 +200,6 @@ const Hero: React.FC = () => {
     openLastModal();
   };
 
-  // FOR SNAP
-  const handleConnectMetamask = async () => {
-    await (window.ethereum as any).enable();
-
-    const provider = new providers.Web3Provider(window.ethereum as any);
-    await provider._ready();
-    setProvider(provider);
-    setIsConnected(true);
-    setDeploymentType("metamask");
-  };
 
   const handleConnectWalletConnect = async () => {
     disconnect();
@@ -226,6 +218,32 @@ const Hero: React.FC = () => {
     setTxID("");
   };
 
+
+  let handleConnectMM = async () => {
+    const provider = await detectEthereumProvider();
+
+    // web3_clientVersion returns the installed MetaMask version as a string
+    const isFlask = (
+      await (provider as any).request({ method: 'web3_clientVersion' })
+    )?.includes('flask');
+
+    if (provider && isFlask) {
+      console.log('MetaMask Flask successfully detected!');
+
+      // Now you can use Snaps!
+    } else {
+      console.error('Please install MetaMask Flask!');
+    }
+    // await (window.ethereum as any).enable()
+    await connectSnap()
+
+
+    setDeploymentType("metamask")
+    setIsConnected(true);
+    close();
+    openLastModal();
+  }
+
   const handleDeploy = async () => {
     console.log("deploying type ", deploymentType, "long term", isLongTerm);
 
@@ -243,6 +261,7 @@ const Hero: React.FC = () => {
         return;
       } else if (deploymentType == "metamask") {
         // METAMASK SNAP!!
+        await handleConnectMM()
         return;
       } else if (deploymentType == "arconnect") {
         if (frequency == undefined) {
@@ -303,9 +322,28 @@ const Hero: React.FC = () => {
         onCloseModal();
         onCloseFinal();
         clear();
+      } else if (deploymentType == "metamask") {
+        let source = await getWebpageSource(website)
+
+        const id = await (window.ethereum as any).request({
+          method: "wallet_invokeSnap",
+          params: [
+            defaultSnapOrigin,
+            { method: "bundle_data", params: { data: source } },
+          ],
+        });
+        setTxID(id);
+        setisTxInProgress(true);
+        console.log("deployed using", deploymentType, "with id", id);
+        await sleep(5000);
+        onCloseModal();
+        onCloseFinal();
+        clear();
       }
     }
   };
+
+
 
   return (
     <Flex
@@ -447,6 +485,7 @@ const Hero: React.FC = () => {
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
+                        hidden={!isLongTerm}
                         borderColor={"grey"}
                         onClick={handleConnectWalletBundlr}
                       >
@@ -456,12 +495,14 @@ const Hero: React.FC = () => {
                         borderWidth="1px"
                         borderRadius="lg"
                         borderColor={"grey"}
+                        onClick={handleConnectMM}
                       >
                         Metamask SNAP
                       </Button>
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
+                        hidden={!isLongTerm}
                         borderColor={"grey"}
                         onClick={handleConnectWalletConnect}
                       >
@@ -615,7 +656,7 @@ const isValidUrl = (urlString: string) => {
     "((\\d{1,3}\\.){3}\\d{1,3}))" + // validate OR ip (v4) address
     "(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*" + // validate port and path
     "(\\?[;&a-z\\d%_.~+=-]*)?" + // validate query string
-      "(\\#[-a-z\\d_]*)?$",
+    "(\\#[-a-z\\d_]*)?$",
     "i"
   ); // validate fragment locator
   return !!urlPattern.test(urlString);
@@ -629,3 +670,47 @@ const isValidUrl = (urlString: string) => {
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+
+
+const defaultSnapOrigin = "local:http://localhost:8080";
+
+const connectSnap = async (
+  snapId: string = defaultSnapOrigin,
+  params: Record<"version" | string, unknown> = {}
+) => {
+  await (window.ethereum as any).request({
+    method: "wallet_enable",
+    params: [
+      {
+        wallet_snap: {
+          [snapId]: {
+            ...params,
+          },
+        },
+      },
+    ],
+  });
+};
+
+
+
+const getSnaps = async (): Promise<[any]> => {
+  return await (window.ethereum as any).request({
+    method: "wallet_getSnaps",
+  });
+};
+
+const getSnap = async (version?: string): Promise<any> => {
+  try {
+    const snaps = await getSnaps();
+
+    return Object.values(snaps).find(
+      (snap) =>
+        snap.id === defaultSnapOrigin && (!version || snap.version === version)
+    );
+  } catch (e) {
+    console.log("Failed to obtain installed snap", e);
+    return undefined;
+  }
+};

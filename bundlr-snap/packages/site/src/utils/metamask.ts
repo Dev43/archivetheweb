@@ -11,6 +11,7 @@ export const isFlask = async () => {
       method: 'web3_clientVersion',
     });
 
+    // @ts-ignore
     const isFlaskDetected = (clientVersion as string[])?.includes('flask');
 
     return Boolean(provider && isFlaskDetected);
