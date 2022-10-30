@@ -49,7 +49,7 @@ const Archives: React.FC = () => {
                 width={"500px"}
                 borderColor="rgba(0, 0, 0, 0.1)"
                 borderRadius={"md"}
-                borderWidth={"1px"}
+                // borderWidth={"1px"}
               >
                 <iframe
                   id={`frame-${orderID}`}
@@ -62,7 +62,7 @@ const Archives: React.FC = () => {
                 />
 
                 <Center w="100%">
-                  <Box color="black" marginTop={"10px"}>
+                  <Box color="black" marginTop={"30px"}>
                     URL: {order.website}
                   </Box>
                 </Center>

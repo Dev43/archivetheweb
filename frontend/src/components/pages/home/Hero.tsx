@@ -98,6 +98,10 @@ const Hero: React.FC = () => {
   } = useSigner();
   const { account, isReady: isAccountReadyWC } = useAccount();
 
+  console.log(wcSigner)
+  console.log(wcError)
+  console.log(isWCSignerLoading)
+
   const {
     isOpen: isOpenModal,
     onOpen: openConnectionModal,
@@ -126,33 +130,30 @@ const Hero: React.FC = () => {
     [archivor]
   );
 
+  React.useEffect(
+    () => {
+    
+      return () => {
+        console.log("disconnecting from WC")
+        disconnect()
+
+      };
+    },
+    []
+  );
+
 
   React.useEffect(
     () => {
       console.log(account)
       if (account.isConnected && wcSigner) {
-        console.log("disconnecting from wc")
+        console.log("connected from wc")
         handleConnectWalletConnect()
       }
     },
     [wcSigner, isWCSignerLoading, wcError]
   );
 
-  React.useEffect(
-    () => {
-      disableConnectButton(calcshouldConnectBeDisabled())
-    },
-    [isLongTerm, frequency, duration, website]
-  );
-
-  const calcshouldConnectBeDisabled = () => {
-    if (isLongTerm && frequency && frequency > 0 && duration && duration > 0 && isValidUrl(website)) {
-      return false
-    } else if (isValidUrl(website)) {
-      return false
-    }
-    return true
-  }
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -328,7 +329,7 @@ const Hero: React.FC = () => {
           .connect({ signer: evmSignature, signatureType: 'ethereum' });
         console.log("connected to long term mm")
 
-        await arch.writeInteraction({
+       let tx= await arch.writeInteraction({
           function: "createOrder",
           orderAction: {
             website: website,
@@ -340,19 +341,25 @@ const Hero: React.FC = () => {
           },
         });
 
-        await refreshState();
+        console.log(tx)
+        let id = tx.bundlrResponse.id
+
+        setTxID(id);
+        setisTxInProgress(true);
+        console.log("deployed using", deploymentType, "with id", id);
+        closeConnectionModal();
+        await sleep(10000);
         onCloseFinal();
-        return;
+        clear();
+        return
 
-
-        return;
       } else if (deploymentType == "arconnect") {
 
         // first they would need to pay someone
         // then they would be able to go ahead and do this
         // right now we shortcut it for time
 
-        await archivor.writeInteraction({
+        let tx = await archivor.writeInteraction({
           function: "createOrder",
           orderAction: {
             website: website,
@@ -363,9 +370,16 @@ const Hero: React.FC = () => {
             duration: dur,
           },
         });
+        console.log(tx)
+        let id = tx.bundlrResponse.id
 
-        await refreshState();
+        setTxID(id);
+        setisTxInProgress(true);
+        console.log("deployed using", deploymentType, "with id", id);
+        closeConnectionModal();
+        await sleep(10000);
         onCloseFinal();
+        clear();
         return;
       }
     } else {
@@ -394,7 +408,7 @@ const Hero: React.FC = () => {
         setTxID(id);
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", id);
-        await sleep(5000);
+        await sleep(10000);
         closeConnectionModal();
         onCloseFinal();
         clear();
@@ -411,7 +425,7 @@ const Hero: React.FC = () => {
         setTxID(id);
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", id);
-        await sleep(5000);
+        await sleep(10000);
         closeConnectionModal();
         onCloseFinal();
         clear();
@@ -424,7 +438,7 @@ const Hero: React.FC = () => {
         setTxID(txID);
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", txID);
-        await sleep(5000);
+        await sleep(10000);
         closeConnectionModal();
         onCloseFinal();
         clear();
@@ -469,7 +483,7 @@ const Hero: React.FC = () => {
 
               justifyItems="center"
               bg={isLongTerm ? "rgba(31, 148, 238, 0.18)" : "white"}
-              onClick={() => setisLongTerm(!isLongTerm)}
+              onClick={() => { setisLongTerm(!isLongTerm) }}
             >
               <Center>Long Term</Center>
             </Box>
@@ -481,7 +495,7 @@ const Hero: React.FC = () => {
               alignContent={"center"}
               justifyItems="center"
               bg={isLongTerm ? "white" : "rgba(31, 148, 238, 0.18)"}
-              onClick={() => setisLongTerm(!isLongTerm)}
+              onClick={() => { setisLongTerm(!isLongTerm); setfrequency(1); setduration(0) }}
             >
               <Center>One Time</Center>
             </Box>
@@ -501,10 +515,11 @@ const Hero: React.FC = () => {
               <NumberInput
                 min={1}
                 max={30000}
+
                 borderColor={"grey"}
                 variant="outline"
                 placeholder="https://bbc.com"
-                color={"grey"}
+                color={"black"}
                 size="lg"
               >
                 <NumberInputField
@@ -540,14 +555,14 @@ const Hero: React.FC = () => {
                   <Td>  Expected Price Per Snapshot (USD)</Td>
                   <Td>    $0.007  </Td>
                 </Tr>
-                <Tr>
+                {isLongTerm && <Tr>
                   <Td>
                     Total Snapshots*{" "}
                   </Td>
                   <Td isNumeric>
                     {frequency && duration && (duration * 24 * 60) / frequency}
                   </Td>
-                </Tr>
+                </Tr>}
                 <Tr>
                   <Td>
 
@@ -555,9 +570,9 @@ const Hero: React.FC = () => {
 
                   </Td>
                   <Td isNumeric>
-                    ${frequency &&
+                    ${isLongTerm ? (frequency &&
                       duration &&
-                      ((duration * 24 * 60) / frequency) * cost}
+                      ((duration * 24 * 60) / frequency)) * cost : cost}
                   </Td>
                 </Tr>
               </Tbody>
@@ -603,7 +618,7 @@ const Hero: React.FC = () => {
                         borderColor={"rgba(0, 0, 0, 0.1)"}
                         bgColor="rgba(31, 148, 238, 0.1)"
                         height={"50px"}
-
+                        hidden={!isLongTerm}
                         onClick={handleArconnect}
                       >
 
@@ -617,11 +632,10 @@ const Hero: React.FC = () => {
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
-                        hidden={!isLongTerm}
+                        hidden={isLongTerm}
                         borderColor={"rgba(0, 0, 0, 0.1)"}
                         bgColor="rgba(31, 148, 238, 0.1)"
                         height={"50px"}
-
                         onClick={handleBundlrConnection}
                       >
 
@@ -724,6 +738,7 @@ const Hero: React.FC = () => {
           cost={cost}
           isTxInProgress={isTxInProgress}
           txID={txID}
+          isLongTerm={isLongTerm}
         />
       </Flex>
     </Flex>
@@ -744,6 +759,7 @@ function DeployModal(args: any) {
     cost,
     isTxInProgress,
     txID,
+    isLongTerm
   } = args;
   return (
     <>
@@ -770,7 +786,7 @@ function DeployModal(args: any) {
                           <Tbody >
                             <Tr >
                               <Td>  Tx ID:</Td>
-                              <Td>   <a href={`https://arweave.net/${txID}`} target="_blank">{txID}</a> </Td>
+                              <Td>   <a href={`https://arweave.net/${txID}`} target="_blank">{txID && txID.substring(0, 6)+"..."}</a> </Td>
                             </Tr>
 
                           </Tbody>
@@ -806,10 +822,10 @@ function DeployModal(args: any) {
                           Snapshot frequency{" "}
                         </Td>
                         <Td >
-                          every {frequency} minutes
+                          {isLongTerm ? `every ${frequency} minutes` : "once"}
                         </Td>
                       </Tr>
-                      <Tr>
+                      {isLongTerm && <> <Tr>
                         <Td>
                           Duration{" "}
                         </Td>
@@ -817,22 +833,23 @@ function DeployModal(args: any) {
                           {duration} days
                         </Td>
                       </Tr>
-                      <Tr>
-                        <Td>
-                          Snapshots per day{" "}
-                        </Td>
-                        <Td>
-                          {(24 * 60) / frequency}
-                        </Td>
-                      </Tr>
-                      <Tr>
-                        <Td>
-                          Total Snapshots{" "}
-                        </Td>
-                        <Td>
-                          {duration && frequency && (duration * 24 * 60) / frequency}
-                        </Td>
-                      </Tr>
+                        <Tr>
+                          <Td>
+                            Snapshots per day{" "}
+                          </Td>
+                          <Td>
+                            {(24 * 60) / frequency}
+                          </Td>
+                        </Tr>
+                        <Tr>
+                          <Td>
+                            Total Snapshots{" "}
+                          </Td>
+                          <Td>
+                            {duration && frequency && (duration * 24 * 60) / frequency}
+                          </Td>
+                        </Tr>
+                      </>}
                     </Tbody>
 
                   </Table>
@@ -862,9 +879,9 @@ function DeployModal(args: any) {
 
                         </Td>
                         <Td isNumeric>
-                          ${frequency &&
+                          ${isLongTerm ? (frequency &&
                             duration &&
-                            ((duration * 24 * 60) / frequency) * cost}
+                            ((duration * 24 * 60) / frequency)) * cost : cost}
                         </Td>
                       </Tr>
                     </Tbody>
