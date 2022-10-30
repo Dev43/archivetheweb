@@ -20,6 +20,7 @@ import { useStateProvider } from "../../../context/State";
 
 const Archive: React.FC = () => {
   const [data, setdata] = React.useState<any>([]);
+  const [lastwebsite, setlastwebsite] = React.useState<any>("");
 
   let params = useParams();
   console.log(params);
@@ -48,7 +49,9 @@ const Archive: React.FC = () => {
     }
     console.log(order[0]);
     order = order[0];
+    let c: any = {};
     for (let [claimID, claim] of order.claims.entries()) {
+      c = claim;
       data.push(
         <Flex key={claimID}>
           <Box h="40px" color="gray">
@@ -62,6 +65,7 @@ const Archive: React.FC = () => {
         </Flex>
       );
     }
+    setlastwebsite(`https://arweave.net/${c.claimer_tx}`);
     setdata(data);
   };
 
@@ -70,13 +74,18 @@ const Archive: React.FC = () => {
       <Heading color="black">
         Explore Archive {">"} {params.id}
       </Heading>
-      <Box color="grey">Viewing all snapshots for {website}</Box>
+      <Box color="grey">
+        Viewing all snapshots for{" "}
+        <a href={`${website}`} target="_blank">
+          {website}
+        </a>
+      </Box>
       <Flex
         // my={"140px"}
         height={"685px"}
         borderWidth="1px"
         borderRadius="lg"
-        borderColor={"grey"}
+        borderColor={"rgba(0,0,0,0.1)"}
       >
         <Flex
           p={8}
@@ -92,23 +101,23 @@ const Archive: React.FC = () => {
           <VStack
             divider={<StackDivider borderColor="gray.200" />}
             spacing={1}
-            width="100%"
+            // width="100%"
             align="stretch"
           >
             {data}
           </VStack>
         </Flex>
-        <Flex p={8} flex={1} alignItems={"center"} justify={"center"}>
+        <Flex p={14} flex={1}>
           <iframe
             id="myFrame"
             width={"100%"}
-            height="500px"
+            height="300px"
             // style={{
             //   "iframe": {
 
             //   }
             // }}
-            src={"https://ethlisbon.org"}
+            src={lastwebsite}
           />
         </Flex>
       </Flex>

@@ -747,9 +747,9 @@ function DeployModal(args: any) {
   } = args;
   return (
     <>
-      <Modal isOpen={true} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent bgColor="white" color="black" boxSize={"sm"}>
+        <ModalContent bgColor="white" color="black" boxSize={"2xl"}>
           {isTxInProgress ? (
             <>
               <ModalHeader bgColor="white" color="black">

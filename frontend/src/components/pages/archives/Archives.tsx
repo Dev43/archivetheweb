@@ -43,7 +43,14 @@ const Archives: React.FC = () => {
         <LinkBox maxW="sm" p="5" borderWidth="1px" rounded="md">
           <LinkOverlay href={`/archives/${order.website}`}>
             <Flex key={orderID}>
-              <Box bg="white" height="300px" width={"500px"}>
+              <Box
+                bg="white"
+                height="300px"
+                width={"500px"}
+                borderColor="rgba(0, 0, 0, 0.1)"
+                borderRadius={"md"}
+                borderWidth={"1px"}
+              >
                 <iframe
                   id={`frame-${orderID}`}
                   src={order.website}
@@ -55,7 +62,9 @@ const Archives: React.FC = () => {
                 />
 
                 <Center w="100%">
-                  <Box color="grey">{order.website}</Box>
+                  <Box color="black" marginTop={"10px"}>
+                    URL: {order.website}
+                  </Box>
                 </Center>
               </Box>
             </Flex>
@@ -68,8 +77,8 @@ const Archives: React.FC = () => {
 
   return (
     <Container maxW={"1280px"} my={10}>
-      <Heading>Explore Archives</Heading>
-      See which websites have been archived so far.
+      <Heading color="black">Explore Archives</Heading>
+      <Box color="black">See which websites have been archived so far.</Box>
       <SimpleGrid minChildWidth="300px" spacing="40px">
         {data}
       </SimpleGrid>
