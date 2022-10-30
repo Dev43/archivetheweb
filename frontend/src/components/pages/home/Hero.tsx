@@ -22,6 +22,7 @@ import {
   Tfoot,
   Tr,
   Thead,
+  VStack,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 // example imports
@@ -746,20 +747,40 @@ function DeployModal(args: any) {
   } = args;
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={true} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent bgColor="white" color="grey">
+        <ModalContent bgColor="white" color="black" boxSize={"sm"}>
           {isTxInProgress ? (
             <>
-              <ModalHeader bgColor="white" color="grey">
+              <ModalHeader bgColor="white" color="black">
                 Transaction in progress
               </ModalHeader>
 
               <ModalBody>
-                <Box boxSize="lg">
-                  <Image src={floppy} alt="Nyan" />
-                </Box>
-                <Box>Tx ID: ${txID}</Box>
+                <Flex justify={"center"} >
+
+                  <Center>
+                    <VStack spacing={10} align={"center"} justify="center" alignItems={"center"} alignContent="center">
+
+                      <img src={floppy} alt="Nyan" height={"150px"} width={"240px"} />
+
+
+                      <TableContainer bgColor={"rgba(31, 148, 238, 0.1)"} borderRadius="xl" width={"100%"}>
+                        <Table variant='nostyle'>
+                          <Tbody >
+                            <Tr >
+                              <Td>  Tx ID:</Td>
+                              <Td>   <a href={`https://arweave.net/${txID}`} target="_blank">{txID}</a> </Td>
+                            </Tr>
+
+                          </Tbody>
+
+                        </Table>
+                      </TableContainer>
+
+                    </VStack>
+                  </Center>
+                </Flex>
               </ModalBody>
 
               <ModalFooter />
@@ -771,21 +792,88 @@ function DeployModal(args: any) {
               </ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-                <Box>URL: {website}</Box>
-                <Box>Snapshot frequency: every {frequency} minutes</Box>
-                <Box>Duration: {duration} day</Box>
-                <Box>Snapshots per day: {(24 * 60) / frequency}</Box>
-                <Box>
-                  Total snapshots:{" "}
-                  {duration && frequency && (duration * 24 * 60) / frequency}
-                </Box>
-                <Box>Expected price per snapshots: ${cost}</Box>
-                <Box>
-                  Total Cost: ${duration &&
-                    frequency &&
-                    ((duration * 24 * 60) / frequency) * cost}{" "}
-                </Box>
-                <Box>
+
+
+                <TableContainer bgColor={"white"} borderRadius="xl" marginBottom="20px">
+                  <Table variant='nostyle'>
+                    <Tbody >
+                      <Tr >
+                        <Td>  URL</Td>
+                        <Td>  {website}  </Td>
+                      </Tr>
+                      <Tr>
+                        <Td>
+                          Snapshot frequency{" "}
+                        </Td>
+                        <Td >
+                          every {frequency} minutes
+                        </Td>
+                      </Tr>
+                      <Tr>
+                        <Td>
+                          Duration{" "}
+                        </Td>
+                        <Td>
+                          {duration} days
+                        </Td>
+                      </Tr>
+                      <Tr>
+                        <Td>
+                          Snapshots per day{" "}
+                        </Td>
+                        <Td>
+                          {(24 * 60) / frequency}
+                        </Td>
+                      </Tr>
+                      <Tr>
+                        <Td>
+                          Total Snapshots{" "}
+                        </Td>
+                        <Td>
+                          {duration && frequency && (duration * 24 * 60) / frequency}
+                        </Td>
+                      </Tr>
+                    </Tbody>
+
+                  </Table>
+                </TableContainer>
+
+
+
+                <TableContainer bgColor={"rgba(31, 148, 238, 0.1)"} borderRadius="xl" marginBottom="20px">
+                  <Table variant='nostyle'>
+                    <Tbody >
+                      <Tr >
+                        <Td>  Expected Price Per Snapshot (USD)</Td>
+                        <Td>    $0.007  </Td>
+                      </Tr>
+                      {/* <Tr>
+                  <Td>
+                    Total Snapshots*{" "}
+                  </Td>
+                  <Td isNumeric>
+                    {frequency && duration && (duration * 24 * 60) / frequency}
+                  </Td>
+                </Tr> */}
+                      <Tr>
+                        <Td>
+
+                          Total Cost{" "}
+
+                        </Td>
+                        <Td isNumeric>
+                          ${frequency &&
+                            duration &&
+                            ((duration * 24 * 60) / frequency) * cost}
+                        </Td>
+                      </Tr>
+                    </Tbody>
+
+                  </Table>
+                </TableContainer>
+
+
+                <Box fontSize={14} fontStyle="italic">
                   *Duration and total snapshots are approximate and based on
                   today’s price for archiving. Price fluctuations may impact the
                   actual duration and total snapshots.
@@ -797,6 +885,7 @@ function DeployModal(args: any) {
                   color="white"
                   width="100%"
                   colorScheme="blue"
+                  height={"50px"}
                   mr={3}
                   onClick={handleDeploy}
                 >
