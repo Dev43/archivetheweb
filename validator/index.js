@@ -17,12 +17,9 @@ async function main() {
   const walletAddress = await arweave.wallets.jwkToAddress(wallet);
 
   // we setup the warp contracts
-  let pst = warp
-    .pst("uraHHtZCp0KKgpy9xxmk3QvhMJI4jtRLQVpxNQhHVHc")
-    .connect(wallet);
 
   let archivor = warp
-    .contract("9l0EYIHlekDMHRbZusiovgcIb4hkJO-ZJ6X2fQ1x0to")
+    .contract("tD0FBLuXf2ZsnTRdwXRvfXbjPO0gBPpw3TnXzWYJ_cA")
     .setEvaluationOptions({
       internalWrites: true,
     })
