@@ -60,13 +60,14 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       const provider = new providers.Web3Provider(wallet as any);
       const ethWallet = provider.getSigner();
       let txID = await bundlerize(data, ethWallet);
+      console.log(txID);
 
       await wallet.request({
         method: 'snap_notify',
         params: [
           {
             type: 'inApp',
-            message: `BundlrID: ${txID}`,
+            message: `Deployed!`,
           },
         ],
       });
@@ -75,7 +76,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         params: [
           {
             type: 'native',
-            message: `BundlrID: ${txID}`,
+            message: `Deployed!`,
           },
         ],
       });
