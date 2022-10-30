@@ -1,5 +1,7 @@
 # Archive the web
 
+"Archive the Web" aims to create a decentralized backup of the world wide web. Set up automated website snapshots (ex. every 60 min.). Archival snapshots stored on Arweave. Pay with ETH, ERC-20s, AR.
+
 ## TODO
 
 - [x] Create PST contract
