@@ -97,7 +97,7 @@ const Nav: React.FC<NavProps> = ({ connectWallet }: NavProps) => {
           </Flex>
 
           <Flex alignItems={"center"}>
-            <Stack direction={"row"} spacing={7}>
+            {/* <Stack direction={"row"} spacing={7}>
               {isWalletConnected ? (
                 <Menu>
                   <MenuButton
@@ -130,7 +130,7 @@ const Nav: React.FC<NavProps> = ({ connectWallet }: NavProps) => {
               ) : (
                 <ConnectWallet connectWallet={connectWallet} />
               )}
-            </Stack>
+            </Stack> */}
           </Flex>
         </Flex>
       </Box>

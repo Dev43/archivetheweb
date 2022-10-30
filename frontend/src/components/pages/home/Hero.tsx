@@ -50,7 +50,7 @@ import { bundlerize } from "../../../context/bundlr";
 import web from "@bundlr-network/client/build/web";
 const Hero: React.FC = () => {
   const navigate = useNavigate();
-  const { isOpen, open, close } = useConnectModal();
+  const { isOpen:isOpenWCModal, open:openWCModal, close:closeWCModal } = useConnectModal();
   const {
     isOpen: isOpenFinal,
     onOpen: onOpenFinal,
@@ -88,9 +88,10 @@ const Hero: React.FC = () => {
 
   const {
     isOpen: isOpenModal,
-    onOpen: onOpenModal,
-    onClose: onCloseModal,
+    onOpen: openConnectionModal,
+    onClose: closeConnectionModal,
   } = useDisclosure();
+
   const refreshState = async () => {
     if (archivor) {
       setContractState(
@@ -173,15 +174,12 @@ const Hero: React.FC = () => {
     console.log("Arconnect ready");
     setDeploymentType("arconnect");
     setIsConnected(true);
-    close();
+   closeConnectionModal()
     openLastModal();
   };
 
-  const handleShowConnectionChoices = () => {
-    onOpenModal()
-  }
 
-  const handleArconnectConnection = async () => {
+  const handleBundlrConnection = async () => {
     await (window.ethereum as any).enable();
 
     const provider = new providers.Web3Provider(window.ethereum as any);
@@ -200,7 +198,7 @@ const Hero: React.FC = () => {
     setBundlr(bundlr);
     setDeploymentType("arweave");
     setIsConnected(true);
-    close();
+    closeConnectionModal()
     openLastModal();
   };
 
@@ -219,7 +217,7 @@ const Hero: React.FC = () => {
 
     setDeploymentType("walletconnect")
     setIsConnected(true);
-    close();
+    closeWCModal();
     openLastModal();
 
   };
@@ -227,12 +225,12 @@ const Hero: React.FC = () => {
   const openWalletConnect = async () => {
     // we open the walletconnect
 
-    if (account.isConnected) {
-      return handleConnectWalletConnect()
+    if (isLongTerm) {
+      alert("Currently not supported")
+      return
     }
-    open();
+    openWCModal();
     // we close the previous modal
-    onCloseModal();
 
   };
 
@@ -271,8 +269,13 @@ const Hero: React.FC = () => {
 
     setDeploymentType("metamask")
     setIsConnected(true);
-    close();
+  closeConnectionModal()
     openLastModal();
+  }
+
+  const handleDisconnect = () => {
+    disconnect()
+    setIsConnected(false)
   }
 
   const handleDeploy = async () => {
@@ -298,7 +301,8 @@ const Hero: React.FC = () => {
       let dur = duration * 24 * 60 * 60
       if (deploymentType == "arweave") {
         return;
-      } else if (deploymentType == "walletConnect") {
+      } else if (deploymentType == "walletconnect") {
+        alert("Currently not supported")
         return;
       } else if (deploymentType == "metamask") {
         console.log("in here")
@@ -379,7 +383,7 @@ const Hero: React.FC = () => {
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", id);
         await sleep(5000);
-        onCloseModal();
+        closeConnectionModal();
         onCloseFinal();
         clear();
       } else if (deploymentType == "metamask") {
@@ -396,7 +400,7 @@ const Hero: React.FC = () => {
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", id);
         await sleep(5000);
-        onCloseModal();
+        closeConnectionModal();
         onCloseFinal();
         clear();
       }
@@ -409,7 +413,7 @@ const Hero: React.FC = () => {
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", txID);
         await sleep(5000);
-        onCloseModal();
+        closeConnectionModal();
         onCloseFinal();
         clear();
       }
@@ -420,7 +424,7 @@ const Hero: React.FC = () => {
 
   return (
     <Flex
-      my={"140px"}
+      my={"10px"}
       height={"685px"}
       borderWidth="1px"
       borderRadius="lg"
@@ -527,7 +531,7 @@ const Hero: React.FC = () => {
           {!isConnected ? (
             <>
               <Button
-                onClick={onOpenModal}
+                onClick={openConnectionModal}
                 colorScheme="blue"
                 variant="solid"
                 disabled={isConnectButtonDisabled}
@@ -538,7 +542,7 @@ const Hero: React.FC = () => {
 
               <Modal
                 isOpen={isOpenModal}
-                onClose={onCloseModal}
+                onClose={closeConnectionModal}
                 colorScheme={"white"}
               >
                 <ModalOverlay />
@@ -561,7 +565,7 @@ const Hero: React.FC = () => {
                         borderRadius="lg"
                         hidden={!isLongTerm}
                         borderColor={"grey"}
-                        onClick={handleArconnectConnection}
+                        onClick={handleBundlrConnection}
                       >
                         Arweave x Bundlr
                       </Button>
@@ -593,10 +597,10 @@ const Hero: React.FC = () => {
               colorScheme="blue"
               variant="solid"
               width={"100%"}
-              disabled={isConnected}
-            // onClick={handleShowConnectionChoices}
+             
+            onClick={handleDisconnect}
             >
-              Connected!
+              Disconnect
             </Button>
           )}
           <Box>Pay with Arweave using (AR) (Metamask) (WalletConnect)</Box>
