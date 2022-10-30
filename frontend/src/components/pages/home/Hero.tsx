@@ -121,9 +121,8 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
       }
      handleWalletConnect()
     },
-    [wcSigner]
+    [wcSigner, isWCSignerLoading, wcError]
   );
- 
 
   const handleSetWebsite = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(website);
@@ -189,12 +188,10 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
 
     // console.log(wcProvider.getSigner())
     console.log("in handleWC")
-    if (!wcSigner) {
+    if (!wcSigner && account.isConnected) {
+      refetchWCSigner()
       return
     }
-    console.log(console.log(wcSigner))
-
-    await bundlerize("hello", (wcSigner as any))
 
     setDeploymentType("walletconnect")
     setIsConnected(true);
@@ -205,6 +202,10 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
 
   const openWalletConnect = async () => {
     // we open the walletconnect
+
+    if (account.isConnected) {
+      return handleWalletConnect()
+    }
     open();
     // we close the previous modal
     onCloseModal();
@@ -337,6 +338,19 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
         setTxID(id);
         setisTxInProgress(true);
         console.log("deployed using", deploymentType, "with id", id);
+        await sleep(5000);
+        onCloseModal();
+        onCloseFinal();
+        clear();
+      }
+      else if (deploymentType == "walletconnect") {
+        let source = await getWebpageSource(website)
+
+        let txID =  await bundlerize(source, (wcSigner as any));
+        console.log(txID)
+        setTxID(txID);
+        setisTxInProgress(true);
+        console.log("deployed using", deploymentType, "with id", txID);
         await sleep(5000);
         onCloseModal();
         onCloseFinal();
@@ -504,7 +518,6 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
-                        hidden={!isLongTerm}
                         borderColor={"grey"}
                         onClick={openWalletConnect}
                       >

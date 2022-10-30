@@ -20,9 +20,10 @@
 - [x] Create uploader server
 - [x] Create validator server
 
+- [ ] Fix tags encoding for bundlr
 - [ ] Allow to use bundlr to upload to warp
-- [ ] Use wallet connect (web3Modal) -- then bundlr
-- [ ] Use metamask SNAP (add bundlr?)
+- [x] Use wallet connect (web3Modal) -- then bundlr
+- [x] Use metamask SNAP (add bundlr?)
 
 To do now,
 
