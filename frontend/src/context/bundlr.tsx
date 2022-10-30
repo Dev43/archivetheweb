@@ -35,12 +35,16 @@ export async function bundlerize( data: string, ethWallet: any) {
       signedMsg,
     );
     let publicKey = Buffer.from(ethers.utils.arrayify(recoveredKey));
-  
+    const myTags = [
+      { name: "App-Name", value: "archive-the-web" },
+      { name: 'App-Version', value: '1.0.0' },
+      { name: 'Content-Type', value: 'text/html' },
+    ];
     let newARBundle = await arBundles.createData(
       {
         data: data,
         nonce: Arweave.utils.bufferTob64Url(randomBytes(32)),
-        // tags: myTags,
+        tags: myTags,
         signatureType: 3,
       } as any,
       { n: 'to_change' } as any,
@@ -89,8 +93,14 @@ export async function bundlerize( data: string, ethWallet: any) {
       Arweave.utils.b64UrlToBuffer(d.owner),
       Arweave.utils.b64UrlToBuffer(d.target),
       Arweave.utils.b64UrlToBuffer(d.nonce),
-      // worry about tags later
-      Arweave.utils.stringToBuffer(''),
+      serializeTags(
+        d.tags.map((x: any) => {
+          x.name = Arweave.utils.b64UrlToString(x.name);
+          x.value = Arweave.utils.b64UrlToString(x.value);
+  
+          return x;
+        }),
+      ),
       Arweave.utils.b64UrlToBuffer(d.data),
     ]);
   }

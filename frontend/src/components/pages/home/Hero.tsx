@@ -81,8 +81,6 @@ const Hero: React.FC = () => {
     refetch: refetchWCSigner,
   } = useSigner();
   const { account, isReady: isAccountReadyWC } = useAccount();
-const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
-
 
   const {
     isOpen: isOpenModal,
@@ -192,6 +190,8 @@ const {provider:wcProvider, isReady:isWCProviderReady} = useProvider()
       refetchWCSigner()
       return
     }
+    console.log(wcSigner)
+    console.log(account.isConnected)
 
     setDeploymentType("walletconnect")
     setIsConnected(true);

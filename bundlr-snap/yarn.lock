@@ -6084,10 +6084,10 @@ __metadata:
 
 "arweave-bundles@https://github.com/Dev43/arweave-bundles.git":
   version: 1.0.3
-  resolution: "arweave-bundles@https://github.com/Dev43/arweave-bundles.git#commit=00553bde3b20fea7efd9837ef4a43acd458b2264"
+  resolution: "arweave-bundles@https://github.com/Dev43/arweave-bundles.git#commit=4097f6b07d04c963ce1d88b10053af6b8b725e15"
   dependencies:
     arweave: ^1.10.5
-  checksum: 8e09c974bc9053d6ddfbae68608b1e3ec40325ad32715bd199a13b12db2071e897397e143a6ddf48e722858c311f81dc0e0dda6041192e2a821b48855ea3fea7
+  checksum: 513d08092d0551e0d27ad288e104c4113b39571ccca061a24d3e6d968c979096eaaa36856e49229561e8607a850de906931cde89b978e61bb607c4d79c587541
   languageName: node
   linkType: hard
 

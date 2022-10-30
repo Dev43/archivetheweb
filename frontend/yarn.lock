@@ -4885,7 +4885,7 @@ arrify@^1.0.1:
 
 "arweave-bundles@https://github.com/Dev43/arweave-bundles.git":
   version "1.0.3"
-  resolved "https://github.com/Dev43/arweave-bundles.git#00553bde3b20fea7efd9837ef4a43acd458b2264"
+  resolved "https://github.com/Dev43/arweave-bundles.git#4097f6b07d04c963ce1d88b10053af6b8b725e15"
   dependencies:
     arweave "^1.10.5"
 
