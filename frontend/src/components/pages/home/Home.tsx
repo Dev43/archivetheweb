@@ -13,8 +13,10 @@ const Home: React.FC = () => {
         justifyItems={"center"}
         justifySelf={"center"}
       >
-        <Box>Save a Website</Box>
-        <Box>
+        <Box fontSize={24} paddingLeft="20px" color={"black"}>
+          Save a Website
+        </Box>
+        <Box fontSize={14} paddingLeft="20px">
           Help create a historical log of important websites. Each snapshot is
           stored on Arweave, a permanent data storage solution.
         </Box>

@@ -23,6 +23,7 @@ import { GiSpellBook } from "react-icons/gi";
 import ConnectWallet from "./ConnectWallet";
 import UserDisplay from "../ui/UserDisplay";
 import styles from "./Navigation.module.sass";
+import logo from "../../images/logo.png";
 
 const NavLink = ({
   children,
@@ -38,11 +39,12 @@ const NavLink = ({
       px={2}
       py={1}
       ml={"5px"}
+      padding={"10px"}
       rounded={"md"}
-      _hover={{
-        textDecoration: "none",
-        bg: "secondary",
-      }}
+      // _hover={{
+      //   textDecoration: "none",
+      //   bg: "secondary",
+      // }}
       onClick={() => navigate(path)}
     >
       {children}
@@ -67,7 +69,7 @@ const Nav: React.FC<NavProps> = ({ connectWallet }: NavProps) => {
   return (
     <>
       <Box px={4}>
-        <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
+        <Flex h={16} alignItems={"center"}>
           <Stack
             onClick={navigateToHomepage}
             direction={"row"}
@@ -76,14 +78,14 @@ const Nav: React.FC<NavProps> = ({ connectWallet }: NavProps) => {
             px={4}
             py={2}
             cursor={"pointer"}
-            _hover={{
-              background: "secondary",
-            }}
+            // spacing={2}
+            // _hover={{
+            //   background: "secondary",
+            // }}
           >
-            <GiSpellBook color="grey" fill="white" size={20} />
-            <Box color="grey">ArchiveTheWeb</Box>
+            <img height={"40px"} width="130px" src={logo} />
           </Stack>
-          <Flex alignItems={"center"}>
+          <Flex>
             <NavLink path={"/"}>
               <Box color="grey">Save a Website</Box>
             </NavLink>

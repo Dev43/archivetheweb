@@ -13,6 +13,15 @@ import {
   HStack,
   useDisclosure,
   Center,
+  TableContainer,
+  Table,
+  TableCaption,
+  Th,
+  Tbody,
+  Td,
+  Tfoot,
+  Tr,
+  Thead,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 // example imports
@@ -25,9 +34,12 @@ import Arweave from "arweave";
 import { WarpFactory } from "warp-contracts";
 import { Image } from "@chakra-ui/react";
 import { evmSignature, EvmSignatureVerificationPlugin } from 'warp-signature';
-
 // @ts-ignore
 import floppy from "../../../images/Floppy.webp";
+import ar from "../../../images/ar.png";
+import mm from "../../../images/mm.png";
+import wc from "../../../images/wc.png";
+import arconnect from "../../../images/arconnect.svg";
 import {
   Modal,
   ModalOverlay,
@@ -47,18 +59,17 @@ import {
 } from "@web3modal/react";
 import { DEPLOYED_ADDRESS } from "../../../constants/chain";
 import { bundlerize } from "../../../context/bundlr";
-import web from "@bundlr-network/client/build/web";
 const Hero: React.FC = () => {
   const navigate = useNavigate();
-  const { isOpen:isOpenWCModal, open:openWCModal, close:closeWCModal } = useConnectModal();
+  const { isOpen: isOpenWCModal, open: openWCModal, close: closeWCModal } = useConnectModal();
   const {
     isOpen: isOpenFinal,
     onOpen: onOpenFinal,
     onClose: onCloseFinal,
   } = useDisclosure();
-  const [website, setwebsite] = React.useState<string>("https://ethlisbon.org");
+  const [website, setwebsite] = React.useState<string>("https://bbc.com");
   const [websitePreview, setwebsitePreview] = React.useState<string>(
-    "https://ethlisbon.org"
+    "https://bbc.com"
   );
   const [frequency, setfrequency] = React.useState<number>(1);
   const [duration, setduration] = React.useState<number>(1);
@@ -174,7 +185,7 @@ const Hero: React.FC = () => {
     console.log("Arconnect ready");
     setDeploymentType("arconnect");
     setIsConnected(true);
-   closeConnectionModal()
+    closeConnectionModal()
     openLastModal();
   };
 
@@ -226,7 +237,7 @@ const Hero: React.FC = () => {
     // we open the walletconnect
 
     if (isLongTerm) {
-      alert("Currently not supported")
+      alert("Currently not supported for long term contracts, head to one time for it to work")
       return
     }
     openWCModal();
@@ -269,7 +280,7 @@ const Hero: React.FC = () => {
 
     setDeploymentType("metamask")
     setIsConnected(true);
-  closeConnectionModal()
+    closeConnectionModal()
     openLastModal();
   }
 
@@ -425,22 +436,22 @@ const Hero: React.FC = () => {
   return (
     <Flex
       my={"10px"}
-      height={"685px"}
+      height={"650px"}
       borderWidth="1px"
       borderRadius="lg"
       borderColor={"grey"}
     >
       <Flex
-        p={8}
+        p={2}
         flex={1}
         alignItems={"center"}
         justify={"center"}
-        border={"medium"}
+        border={"small"}
         color={"grey"}
         borderWidth="1px"
         borderRadius="lg"
       >
-        <Stack spacing={3}>
+        <Stack spacing={2}>
           <HStack
             spacing="24px"
             borderWidth="1px"
@@ -454,6 +465,7 @@ const Hero: React.FC = () => {
               justifyContent={"center"}
               alignItems="center"
               alignContent={"center"}
+
               justifyItems="center"
               bg={isLongTerm ? "rgba(31, 148, 238, 0.18)" : "white"}
               onClick={() => setisLongTerm(!isLongTerm)}
@@ -473,7 +485,7 @@ const Hero: React.FC = () => {
               <Center>One Time</Center>
             </Box>
           </HStack>
-          <Box>Website:</Box>
+          <Box color="black">Website:</Box>
           <Input
             borderColor={"grey"}
             variant="outline"
@@ -484,22 +496,23 @@ const Hero: React.FC = () => {
           />
           {isLongTerm && (
             <Box>
-              <Box>Snapshot frequency (in minutes):</Box>
+              <Box color="black">Snapshot frequency (in minutes):</Box>
               <NumberInput
                 min={1}
                 max={30000}
                 borderColor={"grey"}
                 variant="outline"
-                placeholder="snapshot frequency (in minutes)"
+                placeholder="https://bbc.com"
                 color={"grey"}
                 size="lg"
               >
                 <NumberInputField
+                  placeholder="i.e every 60 minutes"
                   onChange={handleSetFrequency}
                   value={frequency}
                 />
               </NumberInput>
-              <Box>Ideal duration (in days)</Box>
+              <Box color="black">Duration (in days)</Box>
 
               <NumberInput
                 min={1}
@@ -513,31 +526,62 @@ const Hero: React.FC = () => {
                 <NumberInputField
                   onChange={handleSetDuration}
                   value={duration}
+                  placeholder="Days snapshots will be prepaid (i.e. 365 days)"
                 />
               </NumberInput>
             </Box>
           )}
 
-          <Box>Expected Price Per Snapshot USD $0.007</Box>
-          <Box>
-            Total Snapshots*{" "}
-            {frequency && duration && (duration * 24 * 60) / frequency}
-          </Box>
-          <Box>
-            Total Cost ${frequency &&
-              duration &&
-              ((duration * 24 * 60) / frequency) * cost}
-          </Box>
+          <TableContainer bgColor={"rgba(31, 148, 238, 0.1)"} borderRadius="xl" marginBottom="20px">
+            <Table variant='nostyle'>
+              <Tbody >
+                <Tr >
+                  <Td>  Expected Price Per Snapshot (USD)</Td>
+                  <Td>    $0.007  </Td>
+                </Tr>
+                <Tr>
+                  <Td>
+                    Total Snapshots*{" "}
+                  </Td>
+                  <Td isNumeric>
+                    {frequency && duration && (duration * 24 * 60) / frequency}
+                  </Td>
+                </Tr>
+                <Tr>
+                  <Td>
+
+                    Total Cost{" "}
+
+                  </Td>
+                  <Td isNumeric>
+                    ${frequency &&
+                      duration &&
+                      ((duration * 24 * 60) / frequency) * cost}
+                  </Td>
+                </Tr>
+              </Tbody>
+
+            </Table>
+          </TableContainer>
+
+
           {!isConnected ? (
             <>
               <Button
                 onClick={openConnectionModal}
-                colorScheme="blue"
+                bgColor="#1F94EE"
                 variant="solid"
+                color="white"
+                height={"60px"}
+                marginTop="20px"
                 disabled={isConnectButtonDisabled}
+                _hover={{
+                  textDecoration: "none",
+                  bg: "secondary",
+                }}
                 width={"100%"}
               >
-                Connect
+                Connect Wallet
               </Button>
 
               <Modal
@@ -546,49 +590,81 @@ const Hero: React.FC = () => {
                 colorScheme={"white"}
               >
                 <ModalOverlay />
-                <ModalContent>
-                  <ModalHeader bgColor={"white"} color="grey">
-                    Connect to a Wallet
+                <ModalContent borderRadius={"xl"}>
+                  <ModalHeader borderRadius={"sm"} bgColor={"white"} color="black">
+                    Connect a Wallet
                   </ModalHeader>
                   <ModalBody bgColor={"white"} color="grey">
                     <Stack spacing={3}>
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
-                        borderColor={"grey"}
+                        borderColor={"rgba(0, 0, 0, 0.1)"}
+                        bgColor="rgba(31, 148, 238, 0.1)"
+                        height={"50px"}
+
                         onClick={handleArconnect}
                       >
-                        Arconnect
+
+                        <HStack w="100%" spacing={6}>
+                          <img height={"25px"} width="25px" src={arconnect} />
+                          <Box color="black">
+                            Arweave x Arconnect
+                          </Box>
+                        </HStack>
                       </Button>
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
                         hidden={!isLongTerm}
-                        borderColor={"grey"}
+                        borderColor={"rgba(0, 0, 0, 0.1)"}
+                        bgColor="rgba(31, 148, 238, 0.1)"
+                        height={"50px"}
+
                         onClick={handleBundlrConnection}
                       >
-                        Arweave x Bundlr
+
+                        <HStack w="100%" spacing={6}>
+                          <img height={"25px"} width="25px" src={ar} />
+                          <Box color="black">
+                            Arweave x Bundlr
+                          </Box>
+                        </HStack>
                       </Button>
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
-                        borderColor={"grey"}
+                        borderColor={"rgba(0, 0, 0, 0.1)"}
+                        bgColor="rgba(31, 148, 238, 0.1)"
+                        height={"50px"}
                         onClick={handleConnectMM}
                       >
-                        Metamask SNAP
+                        <HStack w="100%" spacing={6}>
+                          <img height={"25px"} width="25px" src={mm} />
+                          <Box color="black">
+                            {isLongTerm ? "Metamask x Warp" : "Metamask SNAP x Bundlr"}
+                          </Box>
+                        </HStack>
                       </Button>
                       <Button
                         borderWidth="1px"
                         borderRadius="lg"
-                        borderColor={"grey"}
+                        height={"50px"}
+                        borderColor={"rgba(0, 0, 0, 0.1)"}
+                        bgColor="rgba(31, 148, 238, 0.1)"
                         onClick={openWalletConnect}
                       >
-                        WalletConnect
+                        <HStack w="100%" spacing={6}>
+                          <img height={"25px"} width="25px" src={wc} />
+                          <Box color="black">
+                            WalletConnect
+                          </Box>
+                        </HStack>
                       </Button>
                     </Stack>
                   </ModalBody>
 
-                  <ModalFooter bgColor={"white"} />
+                  <ModalFooter bgColor={"white"} borderRadius={"sm"} />
                 </ModalContent>
               </Modal>
             </>
@@ -597,29 +673,37 @@ const Hero: React.FC = () => {
               colorScheme="blue"
               variant="solid"
               width={"100%"}
-             
-            onClick={handleDisconnect}
+
+              onClick={handleDisconnect}
             >
               Disconnect
             </Button>
           )}
-          <Box>Pay with Arweave using (AR) (Metamask) (WalletConnect)</Box>
+          <Flex alignItems={"center"} justify="center">
+            <Center>
+
+              <HStack>
+                <Box>
+
+                  Pay with Arweave using{" "}
+                </Box>
+
+
+                <img height={"25px"} width="25px" src={ar} />
+
+                <img height={"25px"} width="25px" src={mm} />
+                <img height={"25px"} width="35px" src={wc} />
+              </HStack>
+            </Center>
+          </Flex>
         </Stack>
       </Flex>
-      <Flex p={8} flex={1} alignItems={"center"} justify={"center"}>
-        {/* <Iframe
-          url="https://www.ethlisbon.org"
-          width="100%"
-          height="500px"
-          id=""
-          className=""
-          display="block"
-          position="relative"
-        /> */}
+      <Flex p={14} flex={1} >
+
         <iframe
           id="myFrame"
           width={"100%"}
-          height="500px"
+          height="300px"
           // style={{
           //   "iframe": {
 
